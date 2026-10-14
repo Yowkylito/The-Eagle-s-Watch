@@ -12,18 +12,17 @@ The goal is a bridge of transparency: a single place to follow where citizens' t
 
 > **Status: design preview.** The landing page shows the product's structure and uses **sample, placeholder figures only**. No live government data is connected yet.
 
-## Landing page
+## The app
 
-A single scroll that follows a peso upward, in a calm, warm style: paper background, flag-blue accents, soft white cards.
+Three screens, one tap apart. No long scroll: phones get a bottom navigation bar, wide windows get tabs in the top bar.
 
-| Section | What it does |
+| Screen | What it does |
 |---|---|
-| **Hero** | "Follow every peso." The app icon floats above a card that previews the six levels. |
-| **The trail** | A line fills with flag blue as you scroll from Citizens → Barangay → City/Municipality → Province → National Agencies → Office of the President. Each level lists what will be visible and the public sources it relies on. |
-| **The explorer** | Pick a level of government to see how a sample ₱100 is allocated. Clearly badged *Sample data*. |
-| **How it works** | Official records only, one trail across every level, a receipt for every figure. |
+| **Trace** | "Follow every peso." A gold peso coin rides a rail of six levels: Citizens, Barangay, City / Municipality, Province, National Agencies, Office of the President. Swipe the card, tap a level, or press *Next* and the coin follows. Each level shows how a sample ₱100 is allocated, what will be visible there, and the public sources it relies on. |
+| **How it works** | Three promises (official records only, one trail across every level, a receipt for every figure) and the public sources the project plans to connect. |
+| **Join in** | Open-source links, a way to suggest a data source, and where the project stands today. |
 
-Type: Fraunces for headlines, Inter for text. The app icon source lives in [`design/icon`](design/icon).
+Style: flag-blue stage, cool paper, a gold coin as the one bright accent. Barlow Condensed for headlines, Inter for text. The app icon source lives in [`design/icon`](design/icon).
 
 ## Tech
 
@@ -37,10 +36,11 @@ Type: Fraunces for headlines, Inter for text. The app icon source lives in [`des
 
 ```
 composeApp/src/commonMain/kotlin/ph/eagleswatch/
-├── App.kt              # window sizing, scroll state, section order
+├── App.kt              # layout breakpoint, current screen, shared level pager state
 ├── content/Content.kt  # tiers, principles, sample data (all copy lives here)
-├── sections/           # NavBar, Hero, Trail, Explorer, Principles, Footer
-└── ui/                 # theme, text, buttons, scroll-reveal helpers
+├── nav/                # top bar, bottom bar, destinations
+├── screens/            # TraceScreen, HowItWorksScreen, JoinScreen
+└── ui/                 # theme, text, buttons, focus ring, layout info
 ```
 
 ## Run
@@ -63,4 +63,4 @@ Production web bundle: `./gradlew :composeApp:wasmJsBrowserDistribution`.
 
 ## Licenses
 
-Fonts (Fraunces, Inter) are licensed under the SIL Open Font License 1.1. See [`licenses/`](licenses).
+Fonts (Barlow Condensed, Inter) are licensed under the SIL Open Font License 1.1. See [`licenses/`](licenses).

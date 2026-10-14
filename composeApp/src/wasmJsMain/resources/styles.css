@@ -4,7 +4,7 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #F5EEE3;
+    background: #1440C2;
 }
 
 /* Shown behind the Compose canvas while the Wasm bundle loads; the opaque canvas covers it afterwards. */
@@ -15,13 +15,16 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #1440C2;
-    font: 500 12px/1 ui-monospace, "SFMono-Regular", Menlo, monospace;
-    letter-spacing: 0.4em;
+    color: #ffffff;
+    font: 700 28px/1 "Arial Narrow", Arial, sans-serif;
     animation: pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 0.35; }
+    0%, 100% { opacity: 0.45; }
     50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #boot { animation: none; }
 }
