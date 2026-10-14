@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,17 +27,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ph.eagleswatch.content.Status
 
 /**
  * Draws a visible ring while the element has keyboard focus.
@@ -44,14 +52,16 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun Modifier.focusRing(shape: Shape, color: Color = EagleColors.Gold): Modifier {
     var focused by remember { mutableStateOf(false) }
+    // Only for keyboard navigation: a tap or click also focuses on some platforms, and needs no ring.
+    val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     return this
         .onFocusChanged { focused = it.isFocused }
-        .then(if (focused) Modifier.border(3.dp, color, shape) else Modifier)
+        .then(if (focused && keyboard) Modifier.border(3.dp, color, shape) else Modifier)
 }
 
 enum class PillTone { Blue, Gold, Ghost }
 
-/** Flat, fully rounded button. Blue on light surfaces, gold or ghost on the blue stage. */
+/** Flat, fully rounded button. Blue on white, gold or ghost on a blue card. */
 @Composable
 fun Pill(
     label: String,
@@ -227,4 +237,122 @@ fun FlagMark(modifier: Modifier = Modifier) {
 @Composable
 fun Divider(modifier: Modifier = Modifier, color: Color = EagleColors.Line) {
     Spacer(modifier.height(1.dp).background(color))
+}
+
+enum class ButtonStyle { Primary, Outline }
+
+/** The main buttons on a page: solid blue for the one action, outlined for "show all" and the like. */
+@Composable
+fun ActionButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    style: ButtonStyle = ButtonStyle.Primary,
+    glyph: Glyph? = null,
+) {
+    val source = remember { MutableInteractionSource() }
+    val hovered by source.collectIsHoveredAsState()
+    val shape = RoundedCornerShape(12.dp)
+    val primary = style == ButtonStyle.Primary
+    val background by animateColorAsState(
+        targetValue = when {
+            primary && hovered -> EagleColors.BlueDeep
+            primary -> EagleColors.Blue
+            hovered -> EagleColors.Surface
+            else -> EagleColors.Page
+        },
+        animationSpec = tween(140),
+        label = "button-bg",
+    )
+    val content = if (primary) Color.White else EagleColors.Ink
+    Row(
+        modifier
+            .focusRing(shape)
+            .clip(shape)
+            .background(background)
+            .then(if (primary) Modifier else Modifier.border(1.dp, EagleColors.Ink, shape))
+            .hoverable(source)
+            .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 13.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (glyph != null) {
+            Icon(glyph, tint = content, size = 20.dp)
+            Spacer(Modifier.width(8.dp))
+        }
+        EText(label, size = 16.sp, weight = FontWeight.SemiBold, color = content, maxLines = 1)
+    }
+}
+
+/** A round white button that floats over a picture, like back and share on a project page. */
+@Composable
+fun CircleButton(
+    glyph: Glyph,
+    description: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    tint: Color = EagleColors.Ink,
+    size: Dp = 36.dp,
+) {
+    Box(
+        modifier
+            .size(size)
+            .shadow(3.dp, CircleShape)
+            .focusRing(CircleShape)
+            .clip(CircleShape)
+            .background(Color.White)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(glyph, tint = tint, size = size * 0.5f)
+    }
+}
+
+val Status.colors: Pair<Color, Color>
+    get() = when (this) {
+        Status.Planned -> EagleColors.Body to EagleColors.Surface
+        Status.Ongoing -> EagleColors.Blue to EagleColors.BlueSoft
+        Status.Delayed -> EagleColors.Amber to EagleColors.AmberSoft
+        Status.Completed -> EagleColors.Green to EagleColors.GreenSoft
+    }
+
+/** Project status as a small pill. [onPicture] gives it a solid white base so it reads over an image. */
+@Composable
+fun StatusBadge(status: Status, modifier: Modifier = Modifier, detail: String? = null, onPicture: Boolean = false) {
+    val (text, soft) = status.colors
+    Row(
+        modifier
+            .then(if (onPicture) Modifier.shadow(2.dp, RoundedCornerShape(50)) else Modifier)
+            .clip(RoundedCornerShape(50))
+            .background(if (onPicture) Color.White else soft)
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(7.dp).background(text, CircleShape))
+        Spacer(Modifier.width(6.dp))
+        EText(
+            text = if (detail != null) "${status.label} · $detail" else status.label,
+            size = 13.sp,
+            weight = FontWeight.SemiBold,
+            color = if (onPicture) EagleColors.Ink else text,
+        )
+    }
+}
+
+/** A thin rounded progress bar. */
+@Composable
+fun ProgressBar(fraction: Float, modifier: Modifier = Modifier, color: Color = EagleColors.Blue, track: Color = EagleColors.Surface) {
+    Box(modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(track)) {
+        Box(Modifier.fillMaxWidth(fraction.coerceIn(0f, 1f)).height(8.dp).clip(RoundedCornerShape(4.dp)).background(color))
+    }
+}
+
+/** Initials in a circle, standing in for a photo until officials upload their own. */
+@Composable
+fun Avatar(initials: String, modifier: Modifier = Modifier, size: Dp = 48.dp, color: Color = EagleColors.Blue) {
+    Box(modifier.size(size).clip(CircleShape).background(color), contentAlignment = Alignment.Center) {
+        EText(initials, size = (size.value * 0.36f).sp, weight = FontWeight.SemiBold, color = Color.White)
+    }
 }

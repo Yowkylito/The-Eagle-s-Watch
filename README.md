@@ -8,21 +8,27 @@
 
 This is for the best transparency of tax that is earned through the blood and sweat of each citizen of the Philippines. We will keep on guarding from LGUs up to the President using this project.
 
-The goal is a bridge of transparency: a single place to follow where citizens' taxes go, from the barangay and local government units up through national agencies to the highest office. Every figure should link back to an official public record.
+The goal is a bridge of transparency: government agencies post their projects in one public place, and citizens follow them. For every project: where the money comes from and how much, when it starts and ends, its purpose, who proposed it and who is responsible, dated updates with pictures, and a full write-up. Citizens like or dislike a project and leave feedback. Every figure should link back to an official public record.
 
-> **Status: design preview.** The landing page shows the product's structure and uses **sample, placeholder figures only**. No live government data is connected yet.
+> **Status: design preview.** The app shows the product's structure with **10 sample projects**. Projects, people and figures are placeholders, not real government data, and are labelled as such. The daily "Alam mo ba?" facts are real rules of Philippine public finance, each with the law it comes from.
 
 ## The app
 
-Three screens, one tap apart. No long scroll: phones get a bottom navigation bar, wide windows get tabs in the top bar.
+The interface takes its patterns from Airbnb's iOS app: a search-first explore feed of picture cards, a listing-style project page, a watchlist and an inbox of updates. Phones get a bottom navigation bar; wide windows get tabs in the top bar, a grid of cards and a side card on project pages.
 
 | Screen | What it does |
 |---|---|
-| **Trace** | "Follow every peso." The citizen sets roughly what they paid in taxes this year (a coin slider on a log scale, with presets), then a gold peso coin carries that amount up a rail of six levels: Citizens, Barangay, City / Municipality, Province, National Agencies, Office of the President. At each level the citizen calls where most of the money goes, then 100 coins flip over to show the split in their own pesos. Visited levels turn gold on the rail, the top of the trail keeps score, and a daily "Alam mo ba?" card shows a real rule of public finance with the law behind it. Progress and the amount are kept on the device, so a return visit picks up where it stopped. |
-| **How it works** | Three promises (official records only, one trail across every level, a receipt for every figure) and the public sources the project plans to connect. |
-| **Join in** | Open-source links, a way to suggest a data source, and where the project stands today. |
+| **Explore** | Search by project, place or agency. Tabs for Roads, Bridges, Schools, Health, Water, Flood control, Farms and Buildings, plus filters for level of government and status. Each card has swipeable pictures, a status badge, a watch (eye) button, citizen approval, place, proposing agency, dates and budget. |
+| **Project page** | Picture gallery with captions; budget, funding source, dates, days left or overdue; proposing and implementing agencies, contractor and the officials responsible; work done against time used and funds released; the purpose and a full article; a timeline of updates with pictures; likes, dislikes and citizen feedback; and the records each figure will link to. A bottom bar keeps Like, Dislike and Feedback in reach. |
+| **Watchlist** | Projects the citizen follows. |
+| **Updates** | Every agency post, newest first, for all projects or only watched ones. |
+| **About** | What the project promises, what agencies will be able to do, the public records it plans to connect, and how to contribute. |
 
-Style: flag-blue stage with the flag's sun behind the pitch (it turns as the coin climbs), cool paper, gold coins as the bright accent. Barlow Condensed for headlines, Inter for text. The app icon source lives in [`design/icon`](design/icon).
+Watched projects, reactions and feedback are saved on the device until accounts and a server exist.
+
+Project pictures are drawn in code, not photographs: each kind of project is illustrated at the stage its works had reached, from a cleared site to a finished structure. When agencies post real photos, these give way to them.
+
+Style: white pages, flag blue for actions, gold for approval, red only for the "Sample data" notice. Inter for text, Barlow Condensed for the wordmark and big numbers. The app icon source lives in [`design/icon`](design/icon).
 
 ## Tech
 
@@ -36,12 +42,12 @@ Style: flag-blue stage with the flag's sun behind the pitch (it turns as the coi
 
 ```
 composeApp/src/commonMain/kotlin/ph/eagleswatch/
-├── App.kt              # layout breakpoint, current screen, shared pager and progress state
-├── content/Content.kt  # tiers, sample splits, tax kinds, daily facts, principles
+├── App.kt              # layout breakpoint, tabs, and the stack of project and article pages
+├── content/            # Projects.kt (model and sample projects), Day.kt (dates), Content.kt (facts, principles)
 ├── nav/                # top bar, bottom bar, destinations
-├── screens/            # TraceScreen + TracePages, HowItWorksScreen, JoinScreen
-├── state/              # TraceProgress, saved on the device (platform storage in each target)
-└── ui/                 # theme, text, buttons, coin grid, coin slider, rolling amount, sun
+├── screens/            # Explore, Project, Article, Watchlist, Updates, About
+├── state/              # CitizenState (watchlist, reactions, feedback), platform storage, share and back
+└── ui/                 # theme, icons, project illustrations, buttons, badges
 ```
 
 ## Run

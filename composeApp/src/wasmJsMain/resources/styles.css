@@ -4,7 +4,7 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #1440C2;
+    background: #FFFFFF;
 }
 
 /* Shown behind the Compose canvas while the Wasm bundle loads; the opaque canvas covers it afterwards. */
@@ -15,7 +15,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: #1440C2;
     font: 700 28px/1 "Arial Narrow", Arial, sans-serif;
     animation: pulse 1.6s ease-in-out infinite;
 }

@@ -1,72 +1,120 @@
 package ph.eagleswatch
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ph.eagleswatch.content.trail
+import ph.eagleswatch.content.Project
+import ph.eagleswatch.content.projectById
 import ph.eagleswatch.nav.BottomNav
 import ph.eagleswatch.nav.Destination
 import ph.eagleswatch.nav.TopBar
-import ph.eagleswatch.screens.HowItWorksScreen
-import ph.eagleswatch.screens.JoinScreen
-import ph.eagleswatch.screens.TraceScreen
-import ph.eagleswatch.state.TraceProgress
+import ph.eagleswatch.screens.AboutScreen
+import ph.eagleswatch.screens.ArticleScreen
+import ph.eagleswatch.screens.ExploreScreen
+import ph.eagleswatch.screens.ProjectScreen
+import ph.eagleswatch.screens.UpdatesScreen
+import ph.eagleswatch.screens.WatchlistScreen
+import ph.eagleswatch.state.CitizenState
+import ph.eagleswatch.state.PlatformBackHandler
 import ph.eagleswatch.ui.EagleColors
 import ph.eagleswatch.ui.Layout
 import ph.eagleswatch.ui.LocalFonts
 import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.rememberEagleFonts
 
+/** A page opened on top of the tabs. */
+private sealed interface Route {
+    data class ProjectPage(val id: String) : Route
+    data class Article(val id: String) : Route
+}
+
 /**
- * Three screens, one tap apart: Trace (the product), How it works, Join in.
+ * Four tabs (Explore, Watchlist, Updates, About), with project pages and articles stacked on top.
  * Phones navigate from a bottom bar; wide windows use tabs in the top bar.
  */
 @Composable
 fun App() {
     val fonts = rememberEagleFonts()
     CompositionLocalProvider(LocalFonts provides fonts) {
-        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Sheet)) {
+        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Page)) {
             val wide = maxWidth >= Layout.WideBreakpoint
             val layout = remember(wide) { Layout(wide = wide, gutter = if (wide) 40.dp else 20.dp) }
 
-            var destination by remember { mutableStateOf(Destination.Trace) }
-            // Hoisted so the chosen level and the citizen's progress survive switching screens.
-            val pager = rememberPagerState(pageCount = { trail.size })
-            val progress = remember { TraceProgress() }
+            var destination by remember { mutableStateOf(Destination.Explore) }
+            val stack = remember { mutableStateListOf<Route>() }
+            val citizen = remember { CitizenState() }
+            val openProject: (Project) -> Unit = { stack.add(Route.ProjectPage(it.id)) }
+            val back: () -> Unit = { stack.removeLastOrNull() }
+            PlatformBackHandler(enabled = stack.isNotEmpty(), onBack = back)
 
             CompositionLocalProvider(LocalLayout provides layout) {
-                Column(Modifier.fillMaxSize()) {
-                    TopBar(current = destination, onSelect = { destination = it })
-                    Crossfade(
-                        targetState = destination,
-                        modifier = Modifier
-                            .weight(1f)
-                            .then(if (wide) Modifier.windowInsetsPadding(WindowInsets.navigationBars) else Modifier),
-                        animationSpec = tween(180),
-                        label = "screen",
-                    ) { shown ->
-                        when (shown) {
-                            Destination.Trace -> TraceScreen(pager, progress)
-                            Destination.HowItWorks -> HowItWorksScreen()
-                            Destination.Join -> JoinScreen()
+                Box(Modifier.fillMaxSize()) {
+                    Column(Modifier.fillMaxSize()) {
+                        if (wide) TopBar(current = destination, onSelect = { destination = it })
+                        Crossfade(
+                            targetState = destination,
+                            modifier = Modifier.weight(1f),
+                            animationSpec = tween(180),
+                            label = "tab",
+                        ) { shown ->
+                            when (shown) {
+                                Destination.Explore -> ExploreScreen(citizen, onOpen = openProject)
+                                Destination.Watchlist -> WatchlistScreen(
+                                    citizen,
+                                    onOpen = openProject,
+                                    onExplore = { destination = Destination.Explore },
+                                )
+                                Destination.Updates -> UpdatesScreen(citizen, onOpen = openProject)
+                                Destination.About -> AboutScreen()
+                            }
+                        }
+                        if (!wide) BottomNav(current = destination, onSelect = { destination = it })
+                    }
+
+                    // Pages slide in from the right as they open and back out as they close.
+                    AnimatedContent(
+                        targetState = stack.size to stack.lastOrNull(),
+                        transitionSpec = {
+                            if (targetState.first > initialState.first) {
+                                slideInHorizontally(tween(260)) { it } togetherWith fadeOut(tween(260))
+                            } else {
+                                fadeIn(tween(200)) togetherWith slideOutHorizontally(tween(240)) { it }
+                            }
+                        },
+                        label = "page",
+                    ) { (_, route) ->
+                        when (route) {
+                            null -> Box(Modifier)
+                            is Route.ProjectPage -> projectById(route.id)?.let { project ->
+                                ProjectScreen(
+                                    project = project,
+                                    citizen = citizen,
+                                    onBack = back,
+                                    onArticle = { stack.add(Route.Article(project.id)) },
+                                )
+                            }
+                            is Route.Article -> projectById(route.id)?.let { ArticleScreen(it, onBack = back) }
                         }
                     }
-                    if (!wide) BottomNav(current = destination, onSelect = { destination = it })
                 }
             }
         }

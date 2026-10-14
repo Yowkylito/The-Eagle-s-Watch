@@ -45,7 +45,7 @@ jobs:
             --target "${{ github.sha }}" \
             --prerelease \
             --title "The Eagle's Watch ${{ steps.apk.outputs.tag }}" \
-            --notes "Design preview of the landing page. Sample figures only, no live government data.
+            --notes "Design preview with sample projects. Sample figures only, no live government data.
 
           Debug-signed build for testing. To install, allow installs from unknown sources on your Android device (minSdk 24)."
 

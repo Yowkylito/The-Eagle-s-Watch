@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
@@ -23,38 +24,36 @@ import ph.eagleswatch.resources.inter_regular
 import ph.eagleswatch.resources.inter_semibold
 
 /**
- * The flag's blue is the stage; a gold peso coin is the one bright thing on it.
- * Red appears only on the "Sample data" badge and the presidency, so it keeps its meaning.
+ * White pages and photo-first cards, with the flag's blue as the one action colour.
+ * Gold marks citizen approval and the eagle's watch; red appears only on the "Sample data" badge.
  */
 object EagleColors {
-    /** Flag blue: the top bar and the stage the coin travels on. */
-    val Stage = Color(0xFF1440C2)
+    /** Flag blue: buttons, links, the selected tab. */
+    val Blue = Color(0xFF1440C2)
+    val BlueDeep = Color(0xFF0E2F96)
+    val BlueSoft = Color(0xFFE4E9FB)
 
-    /** Unlit rail and quiet text on the stage. */
-    val StageLift = Color(0xFF5D7FE3)
+    val Page = Color(0xFFFFFFFF)
 
-    /** Cool paper behind everything that is not the stage. */
-    val Sheet = Color(0xFFF6F7FB)
+    /** Quiet panels and placeholders on the white page. */
+    val Surface = Color(0xFFF4F5F9)
     val Card = Color(0xFFFFFFFF)
     val Ink = Color(0xFF0F1938)
     val Body = Color(0xFF454E6A)
     val Muted = Color(0xFF626A87)
     val Line = Color(0xFFDDE1EE)
 
-    /** Blue for text and bars on light surfaces. */
-    val Blue = Color(0xFF1440C2)
-    val BlueSoft = Color(0xFFE4E9FB)
     val Red = Color(0xFFC8243F)
     val RedSoft = Color(0xFFFBE7EA)
     val Gold = Color(0xFFF4B41A)
     val GoldDeep = Color(0xFFB77D00)
     val GoldSoft = Color(0xFFFFF3D3)
 
-    /** Coin faces in a split, largest share first, so gold always marks where most of the money goes. */
-    val Slices = listOf(Gold, Blue, Color(0xFF6F96F2), Color(0xFF1C9C86), Ink)
-
-    /** A coin whose share has not been revealed yet. */
-    val CoinBlank = Color(0xFFDCE1EF)
+    /** Project status colours: text on its soft background. */
+    val Green = Color(0xFF13795F)
+    val GreenSoft = Color(0xFFE0F3EC)
+    val Amber = Color(0xFF9A4B00)
+    val AmberSoft = Color(0xFFFDEBD3)
 }
 
 @Immutable
@@ -93,12 +92,14 @@ fun EText(
     align: TextAlign = TextAlign.Start,
     maxLines: Int = Int.MAX_VALUE,
     decoration: TextDecoration? = null,
+    ellipsis: Boolean = false,
 ) {
     val fonts = LocalFonts.current
     BasicText(
         text = text,
         modifier = modifier,
         maxLines = maxLines,
+        overflow = if (ellipsis) TextOverflow.Ellipsis else TextOverflow.Clip,
         style = TextStyle(
             color = color,
             fontSize = size,
@@ -125,6 +126,7 @@ fun EText(
     align: TextAlign = TextAlign.Start,
     maxLines: Int = Int.MAX_VALUE,
     decoration: TextDecoration? = null,
+    ellipsis: Boolean = false,
 ) {
-    EText(AnnotatedString(text), modifier, size, color, weight, display, lineHeight, letterSpacing, align, maxLines, decoration)
+    EText(AnnotatedString(text), modifier, size, color, weight, display, lineHeight, letterSpacing, align, maxLines, decoration, ellipsis)
 }
