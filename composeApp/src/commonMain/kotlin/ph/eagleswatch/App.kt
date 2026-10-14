@@ -1,96 +1,70 @@
 package ph.eagleswatch
 
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import ph.eagleswatch.sections.CallToAction
-import ph.eagleswatch.sections.ExplorerSection
-import ph.eagleswatch.sections.Footer
-import ph.eagleswatch.sections.Hero
-import ph.eagleswatch.sections.NavBar
-import ph.eagleswatch.sections.NavHeight
-import ph.eagleswatch.sections.PrinciplesSection
-import ph.eagleswatch.sections.TrailSection
-import ph.eagleswatch.ui.ContentRef
+import ph.eagleswatch.content.trail
+import ph.eagleswatch.nav.BottomNav
+import ph.eagleswatch.nav.Destination
+import ph.eagleswatch.nav.TopBar
+import ph.eagleswatch.screens.HowItWorksScreen
+import ph.eagleswatch.screens.JoinScreen
+import ph.eagleswatch.screens.TraceScreen
 import ph.eagleswatch.ui.EagleColors
-import ph.eagleswatch.ui.LocalEnv
+import ph.eagleswatch.ui.Layout
 import ph.eagleswatch.ui.LocalFonts
-import ph.eagleswatch.ui.PageEnv
+import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.rememberEagleFonts
 
-/** Windows at least this wide get the two-column desktop layout. */
-private val WideBreakpoint = 860.dp
-
+/**
+ * Three screens, one tap apart: Trace (the product), How it works, Join in.
+ * Phones navigate from a bottom bar; wide windows use tabs in the top bar.
+ */
 @Composable
 fun App() {
     val fonts = rememberEagleFonts()
     CompositionLocalProvider(LocalFonts provides fonts) {
-        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Paper)) {
-            val density = LocalDensity.current
-            val wide = maxWidth >= WideBreakpoint
-            val gutter = when {
-                maxWidth >= 1200.dp -> 48.dp
-                wide -> 40.dp
-                else -> 20.dp
-            }
-            val viewportPx = with(density) { maxHeight.toPx() }
-            val navPx = with(density) { NavHeight.toPx() }
+        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Sheet)) {
+            val wide = maxWidth >= Layout.WideBreakpoint
+            val layout = remember(wide) { Layout(wide = wide, gutter = if (wide) 40.dp else 20.dp) }
 
-            val scroll = rememberScrollState()
-            val scope = rememberCoroutineScope()
-            val content = remember { ContentRef() }
-            val anchors = remember { HashMap<String, Float>() }
+            var destination by remember { mutableStateOf(Destination.Trace) }
+            // Hoisted so the chosen level survives switching screens.
+            val pager = rememberPagerState(pageCount = { trail.size })
 
-            val env = remember(wide, gutter, viewportPx, navPx, scroll) {
-                PageEnv(
-                    wide = wide,
-                    gutter = gutter,
-                    viewportPx = viewportPx,
-                    scroll = scroll,
-                    content = content,
-                    anchors = anchors,
-                    navigate = { key ->
-                        val target = if (key == "top") 0f else (anchors[key] ?: 0f) - navPx
-                        scope.launch {
-                            scroll.animateScrollTo(
-                                value = target.toInt().coerceAtLeast(0),
-                                animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
-                            )
-                        }
-                    },
-                )
-            }
-
-            CompositionLocalProvider(LocalEnv provides env) {
-                Box(Modifier.fillMaxSize()) {
-                    Column(Modifier.fillMaxSize().verticalScroll(scroll)) {
-                        // Node offsets are measured against this column, which moves with the scroll.
-                        Column(Modifier.onPlaced { content.coordinates = it }) {
-                            Hero()
-                            TrailSection()
-                            ExplorerSection()
-                            PrinciplesSection()
-                            CallToAction()
-                            Footer()
+            CompositionLocalProvider(LocalLayout provides layout) {
+                Column(Modifier.fillMaxSize()) {
+                    TopBar(current = destination, onSelect = { destination = it })
+                    Crossfade(
+                        targetState = destination,
+                        modifier = Modifier
+                            .weight(1f)
+                            .then(if (wide) Modifier.windowInsetsPadding(WindowInsets.navigationBars) else Modifier),
+                        animationSpec = tween(180),
+                        label = "screen",
+                    ) { shown ->
+                        when (shown) {
+                            Destination.Trace -> TraceScreen(pager)
+                            Destination.HowItWorks -> HowItWorksScreen()
+                            Destination.Join -> JoinScreen()
                         }
                     }
-                    NavBar(Modifier.align(Alignment.TopCenter))
+                    if (!wide) BottomNav(current = destination, onSelect = { destination = it })
                 }
             }
         }
