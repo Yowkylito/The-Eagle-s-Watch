@@ -72,9 +72,23 @@ fun JoinScreen(modifier: Modifier = Modifier) {
                 color = Color.White.copy(alpha = 0.88f),
             )
             Spacer(Modifier.height(24.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            val github = @Composable {
                 Pill("View on GitHub", onClick = { uriHandler.openUri(GITHUB_URL) }, tone = PillTone.Gold)
+            }
+            val suggest = @Composable {
                 Pill("Suggest a source", onClick = { uriHandler.openUri(SUGGEST_SOURCE_URL) }, tone = PillTone.Ghost)
+            }
+            // Two pills are too wide to sit side by side on a phone.
+            if (layout.wide) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    github()
+                    suggest()
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    github()
+                    suggest()
+                }
             }
         }
 
