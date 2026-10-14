@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
@@ -27,6 +24,7 @@ import ph.eagleswatch.resources.Res
 import ph.eagleswatch.resources.eagle_logo
 import ph.eagleswatch.ui.EText
 import ph.eagleswatch.ui.EagleColors
+import ph.eagleswatch.ui.FlagMark
 import ph.eagleswatch.ui.Page
 
 @Composable
@@ -39,25 +37,17 @@ fun Footer() {
                     Image(
                         painter = painterResource(Res.drawable.eagle_logo),
                         contentDescription = null,
-                        modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)),
+                        modifier = Modifier.size(44.dp),
                     )
                     Column {
-                        EText("THE EAGLE'S WATCH", size = 14.sp, weight = FontWeight.Bold, letterSpacing = 2.sp)
-                        EText(
-                            text = "Built by citizens, for citizens.",
-                            size = 13.sp,
-                            color = EagleColors.Muted,
-                        )
+                        EText("The Eagle's Watch", serif = true, size = 18.sp)
+                        EText("Built by citizens, for citizens.", size = 14.sp, color = EagleColors.Muted)
                     }
                 }
-                Spacer(Modifier.height(28.dp))
-                EText(
-                    text = "NON-PARTISAN · OPEN SOURCE · 2026",
-                    size = 10.sp,
-                    mono = true,
-                    color = EagleColors.Muted,
-                    letterSpacing = 1.8.sp,
-                )
+                Spacer(Modifier.height(24.dp))
+                FlagMark()
+                Spacer(Modifier.height(12.dp))
+                EText("Non-partisan · Open source · 2026", size = 13.sp, color = EagleColors.Muted)
             }
         }
     }

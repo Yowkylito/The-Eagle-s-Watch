@@ -41,12 +41,13 @@ import ph.eagleswatch.ui.EagleColors
 import ph.eagleswatch.ui.LocalEnv
 import ph.eagleswatch.ui.Page
 import ph.eagleswatch.ui.SectionHeader
+import ph.eagleswatch.ui.SoftCard
 import ph.eagleswatch.ui.anchored
 
-private val SpineX = 20.dp
-private val SpineColumn = 56.dp
+private val SpineX = 15.dp
+private val SpineColumn = 44.dp
 
-/** The tax trail: a vertical spine that fills with gold as the reader scrolls from citizens up to the presidency. */
+/** The tax trail: a line that fills with flag blue as the reader scrolls from citizens up to the presidency. */
 @Composable
 fun TrailSection() {
     val env = LocalEnv.current
@@ -54,16 +55,16 @@ fun TrailSection() {
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = if (env.wide) 112.dp else 72.dp)
+                .padding(vertical = if (env.wide) 96.dp else 64.dp)
                 .anchored("trail"),
         ) {
             SectionHeader(
-                eyebrow = "THE TRAIL",
+                eyebrow = "The trail",
                 title = "Every peso leaves a trail.",
                 body = "From the moment taxes are paid to the office that spends them, public money passes " +
-                    "through a chain of hands. We lay that chain out level by level.",
+                    "through a chain of hands. Here is that chain, level by level.",
             )
-            Spacer(Modifier.height(if (env.wide) 72.dp else 48.dp))
+            Spacer(Modifier.height(if (env.wide) 56.dp else 40.dp))
             TrailSteps()
         }
     }
@@ -79,13 +80,12 @@ private fun TrailSteps() {
             .onGloballyPositioned { top = env.contentY(it) }
             .drawBehind {
                 val x = SpineX.toPx()
-                val stroke = 2.dp.toPx()
-                drawLine(EagleColors.Line, Offset(x, 0f), Offset(x, size.height), strokeWidth = stroke)
-                // The gold line follows the reader: it reaches 70% of the way down the viewport.
+                val stroke = 3.dp.toPx()
+                drawLine(EagleColors.Line, Offset(x, 0f), Offset(x, size.height), strokeWidth = stroke, cap = StrokeCap.Round)
+                // The blue line follows the reader: it reaches 70% of the way down the viewport.
                 val reach = (env.scroll.value + env.viewportPx * 0.7f - top).coerceIn(0f, size.height)
                 if (reach > 0f) {
-                    drawLine(EagleColors.Gold, Offset(x, 0f), Offset(x, reach), strokeWidth = stroke, cap = StrokeCap.Round)
-                    drawCircle(EagleColors.Gold.copy(alpha = 0.22f), radius = 10.dp.toPx(), center = Offset(x, reach))
+                    drawLine(EagleColors.Blue, Offset(x, 0f), Offset(x, reach), strokeWidth = stroke, cap = StrokeCap.Round)
                 }
             },
     ) {
@@ -111,86 +111,81 @@ private fun TrailStep(tier: Tier, isLast: Boolean) {
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(bottom = if (isLast) 0.dp else if (env.wide) 72.dp else 52.dp)
+            .padding(bottom = if (isLast) 0.dp else 20.dp)
             .onGloballyPositioned { contentY = env.contentY(it) },
     ) {
         Box(Modifier.width(SpineColumn), contentAlignment = Alignment.TopStart) {
-            Node(progress, Modifier.padding(start = SpineX - 7.dp, top = 12.dp))
+            Node(progress, Modifier.padding(start = SpineX - 11.dp, top = 30.dp))
         }
-        val content = Modifier
-            .weight(1f)
-            .graphicsLayer {
-                alpha = 0.3f + 0.7f * progress
-                translationY = (1f - progress) * 18.dp.toPx()
-            }
-        if (env.wide) {
-            Row(content, horizontalArrangement = Arrangement.spacedBy(48.dp)) {
-                Column(Modifier.weight(0.9f)) { StepTitle(tier, progress) }
-                Column(Modifier.weight(1.1f).padding(top = 6.dp)) { StepDetail(tier) }
-            }
-        } else {
-            Column(content) {
-                StepTitle(tier, progress)
-                Spacer(Modifier.height(20.dp))
+        SoftCard(
+            modifier = Modifier
+                .weight(1f)
+                .graphicsLayer {
+                    alpha = 0.55f + 0.45f * progress
+                    translationY = (1f - progress) * 14.dp.toPx()
+                },
+            padding = if (env.wide) 32.dp else 22.dp,
+        ) {
+            if (env.wide) {
+                Row(horizontalArrangement = Arrangement.spacedBy(40.dp)) {
+                    Column(Modifier.weight(0.9f)) { StepTitle(tier) }
+                    Column(Modifier.weight(1.1f).padding(top = 4.dp)) { StepDetail(tier) }
+                }
+            } else {
+                StepTitle(tier)
+                Spacer(Modifier.height(18.dp))
                 StepDetail(tier)
             }
         }
     }
 }
 
-/** Spine node: a hollow ring that ignites gold once the trail reaches it. */
+/** Trail node: an empty ring that fills with flag blue once the reader reaches it. */
 @Composable
 private fun Node(progress: Float, modifier: Modifier = Modifier) {
     Box(
         modifier
-            .size(14.dp)
+            .size(22.dp)
             .drawBehind {
                 val r = size.minDimension / 2f
-                drawCircle(EagleColors.Gold.copy(alpha = 0.22f * progress), radius = r + 9.dp.toPx() * progress)
-                drawCircle(EagleColors.Ink, radius = r)
+                drawCircle(EagleColors.Blue.copy(alpha = 0.14f * progress), radius = r + 7.dp.toPx() * progress)
+                drawCircle(lerp(EagleColors.Card, EagleColors.Blue, progress), radius = r)
                 drawCircle(
-                    color = lerp(EagleColors.LineStrong, EagleColors.Gold, progress),
-                    radius = r - 1.dp.toPx(),
-                    style = Stroke(width = 2.dp.toPx()),
+                    color = lerp(EagleColors.Line, EagleColors.Blue, progress),
+                    radius = r - 1.5.dp.toPx(),
+                    style = Stroke(width = 3.dp.toPx()),
                 )
-                drawCircle(EagleColors.Gold.copy(alpha = progress), radius = r - 4.dp.toPx())
+                drawCircle(EagleColors.Card.copy(alpha = progress), radius = 4.dp.toPx())
             },
     )
 }
 
 @Composable
-private fun StepTitle(tier: Tier, progress: Float) {
+private fun StepTitle(tier: Tier) {
     val env = LocalEnv.current
-    EText(
-        text = tier.index,
-        size = 12.sp,
-        mono = true,
-        color = lerp(EagleColors.Muted, EagleColors.Gold, progress),
-        letterSpacing = 2.sp,
-    )
-    Spacer(Modifier.height(10.dp))
+    EText("Level ${tier.index}", size = 13.sp, weight = FontWeight.SemiBold, color = EagleColors.Blue)
+    Spacer(Modifier.height(8.dp))
     EText(
         text = tier.name,
-        size = if (env.wide) 36.sp else 28.sp,
-        lineHeight = if (env.wide) 40.sp else 32.sp,
-        weight = FontWeight.Bold,
-        letterSpacing = (-0.5).sp,
+        serif = true,
+        size = if (env.wide) 32.sp else 26.sp,
+        lineHeight = if (env.wide) 38.sp else 32.sp,
     )
-    Spacer(Modifier.height(12.dp))
+    Spacer(Modifier.height(10.dp))
     EText(tier.tagline, size = 16.sp, lineHeight = 25.sp, color = EagleColors.Body)
 }
 
 @Composable
 private fun StepDetail(tier: Tier) {
-    EText("YOU WILL BE ABLE TO SEE", size = 10.sp, mono = true, color = EagleColors.Muted, letterSpacing = 1.8.sp)
-    Spacer(Modifier.height(14.dp))
+    EText("You will be able to see", size = 13.sp, weight = FontWeight.SemiBold, color = EagleColors.Muted)
+    Spacer(Modifier.height(12.dp))
     tier.reveals.forEach { item ->
         Row(Modifier.padding(bottom = 10.dp)) {
-            Box(Modifier.padding(top = 9.dp).size(4.dp).clip(CircleShape).background(EagleColors.Gold))
+            Box(Modifier.padding(top = 8.dp).size(6.dp).clip(CircleShape).background(EagleColors.Blue))
             Spacer(Modifier.width(12.dp))
-            EText(item, size = 15.sp, lineHeight = 23.sp, color = EagleColors.Text)
+            EText(item, size = 15.sp, lineHeight = 23.sp, color = EagleColors.Ink)
         }
     }
-    Spacer(Modifier.height(6.dp))
-    EText("SOURCES · ${tier.sources}", size = 10.sp, mono = true, color = EagleColors.Muted, letterSpacing = 1.2.sp, lineHeight = 16.sp)
+    Spacer(Modifier.height(4.dp))
+    EText("Sources: ${tier.sources}", size = 13.sp, lineHeight = 19.sp, color = EagleColors.Muted)
 }

@@ -14,16 +14,16 @@ The goal is a bridge of transparency: a single place to follow where citizens' t
 
 ## Landing page
 
-Instead of a conventional dashboard, the landing page is one scroll-linked journey that follows a peso upward:
+A single scroll that follows a peso upward, in a calm, warm style: paper background, flag-blue accents, soft white cards.
 
 | Section | What it does |
 |---|---|
-| **Hero** | An animated peso flow rises from the broad base (citizens) through six tiers to a single watching eye. |
-| **The trail** | A spine fills with gold as you scroll from Citizens → Barangay → City/Municipality → Province → National Agencies → Office of the President. Each stop lists what will be visible and the public sources it relies on. |
-| **The explorer** | Pick a level of government to see how a sample ₱100 is allocated. Clearly badged `SAMPLE DATA`. |
-| **How it works** | Source, Trace, Verify, plus the public sources we plan to connect. |
+| **Hero** | "Follow every peso." The app icon floats above a card that previews the six levels. |
+| **The trail** | A line fills with flag blue as you scroll from Citizens → Barangay → City/Municipality → Province → National Agencies → Office of the President. Each level lists what will be visible and the public sources it relies on. |
+| **The explorer** | Pick a level of government to see how a sample ₱100 is allocated. Clearly badged *Sample data*. |
+| **How it works** | Official records only, one trail across every level, a receipt for every figure. |
 
-Design language: deep navy ink, flag gold as the single accent, hairline borders, Space Grotesk for text and JetBrains Mono for labels. Palette is taken from the app icon.
+Type: Fraunces for headlines, Inter for text. The app icon source lives in [`design/icon`](design/icon).
 
 ## Tech
 
@@ -63,4 +63,4 @@ Production web bundle: `./gradlew :composeApp:wasmJsBrowserDistribution`.
 
 ## Licenses
 
-Fonts (Space Grotesk, JetBrains Mono) are licensed under the SIL Open Font License 1.1. See [`licenses/`](licenses).
+Fonts (Fraunces, Inter) are licensed under the SIL Open Font License 1.1. See [`licenses/`](licenses).

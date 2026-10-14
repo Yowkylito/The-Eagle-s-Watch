@@ -16,7 +16,7 @@ targets:
         CFBundleDisplayName: The Eagle's Watch
         UILaunchScreen: {}
         CADisableMinimumFrameDurationOnPhone: true
-        UIUserInterfaceStyle: Dark
+        UIUserInterfaceStyle: Light
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft

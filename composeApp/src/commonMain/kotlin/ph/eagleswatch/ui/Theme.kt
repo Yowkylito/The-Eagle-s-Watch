@@ -16,51 +16,59 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import ph.eagleswatch.resources.Res
-import ph.eagleswatch.resources.jetbrains_mono_medium
-import ph.eagleswatch.resources.space_grotesk_bold
-import ph.eagleswatch.resources.space_grotesk_medium
-import ph.eagleswatch.resources.space_grotesk_regular
+import ph.eagleswatch.resources.fraunces_semibold
+import ph.eagleswatch.resources.inter_regular
+import ph.eagleswatch.resources.inter_semibold
 
-/** Palette taken from the app icon: deep navy ink, flag gold, flag red and blue as sparing accents. */
+/**
+ * Warm paper and ink, with the flag's blue as the working accent.
+ * Red and gold appear only in small, meaningful doses (badges, markers).
+ */
 object EagleColors {
-    val Ink = Color(0xFF050A18)
-    val Raised = Color(0xFF0A1226)
-    val Line = Color(0x1AFFFFFF)
-    val LineStrong = Color(0x33FFFFFF)
-    val Text = Color(0xFFE9EDF7)
-    val Body = Color(0xFFB4BDD3)
-    val Muted = Color(0xFF8590AB)
-    val Gold = Color(0xFFF5B921)
-    val GoldBright = Color(0xFFFFCC4D)
-    val GoldSoft = Color(0x1FF5B921)
-    val Red = Color(0xFFE23D57)
-    val Blue = Color(0xFF3D6BFF)
+    val Paper = Color(0xFFF5EEE3)
+    val PaperDeep = Color(0xFFECE2D2)
+    val Card = Color(0xFFFFFFFF)
+    val Ink = Color(0xFF14213D)
+    val Body = Color(0xFF4B5466)
+    val Muted = Color(0xFF8B8F99)
+    val Line = Color(0xFFE3D8C6)
+    val Blue = Color(0xFF1440C2)
+    val BlueBright = Color(0xFF2B5FE6)
+    val BlueDeep = Color(0xFF0A2788)
+    val BlueSoft = Color(0xFFE6ECFB)
+    val Red = Color(0xFFC8243F)
+    val RedSoft = Color(0xFFFBE7EA)
+    val Gold = Color(0xFFE3A21A)
+    val GoldSoft = Color(0xFFFCF1D8)
+
+    /** Warm brown tint for soft shadows, so cards sit on the paper instead of floating in grey. */
+    val Shadow = Color(0xFF6B4A2B)
 }
 
 @Immutable
-class EagleFonts(val display: FontFamily, val mono: FontFamily)
+class EagleFonts(val serif: FontFamily, val sans: FontFamily)
 
 val LocalFonts = staticCompositionLocalOf<EagleFonts> { error("EagleFonts not provided") }
 
 @Composable
 fun rememberEagleFonts(): EagleFonts {
-    val regular = Font(Res.font.space_grotesk_regular, FontWeight.Normal)
-    val medium = Font(Res.font.space_grotesk_medium, FontWeight.Medium)
-    val bold = Font(Res.font.space_grotesk_bold, FontWeight.Bold)
-    val mono = Font(Res.font.jetbrains_mono_medium, FontWeight.Medium)
-    return remember(regular, medium, bold, mono) {
-        EagleFonts(display = FontFamily(regular, medium, bold), mono = FontFamily(mono))
+    val serif = Font(Res.font.fraunces_semibold, FontWeight.SemiBold)
+    val regular = Font(Res.font.inter_regular, FontWeight.Normal)
+    val semibold = Font(Res.font.inter_semibold, FontWeight.SemiBold)
+    return remember(serif, regular, semibold) {
+        EagleFonts(serif = FontFamily(serif), sans = FontFamily(regular, semibold))
     }
 }
 
+/** Text in the house fonts: Fraunces for [serif] headlines, Inter for everything else. */
 @Composable
 fun EText(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
     size: TextUnit = 16.sp,
-    color: Color = EagleColors.Text,
+    color: Color = EagleColors.Ink,
     weight: FontWeight = FontWeight.Normal,
-    mono: Boolean = false,
+    serif: Boolean = false,
     lineHeight: TextUnit = TextUnit.Unspecified,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     align: TextAlign = TextAlign.Start,
@@ -72,8 +80,8 @@ fun EText(
         style = TextStyle(
             color = color,
             fontSize = size,
-            fontWeight = weight,
-            fontFamily = if (mono) fonts.mono else fonts.display,
+            fontWeight = if (serif) FontWeight.SemiBold else weight,
+            fontFamily = if (serif) fonts.serif else fonts.sans,
             lineHeight = lineHeight,
             letterSpacing = letterSpacing,
             textAlign = align,
@@ -86,12 +94,12 @@ fun EText(
     text: String,
     modifier: Modifier = Modifier,
     size: TextUnit = 16.sp,
-    color: Color = EagleColors.Text,
+    color: Color = EagleColors.Ink,
     weight: FontWeight = FontWeight.Normal,
-    mono: Boolean = false,
+    serif: Boolean = false,
     lineHeight: TextUnit = TextUnit.Unspecified,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     align: TextAlign = TextAlign.Start,
 ) {
-    EText(AnnotatedString(text), modifier, size, color, weight, mono, lineHeight, letterSpacing, align)
+    EText(AnnotatedString(text), modifier, size, color, weight, serif, lineHeight, letterSpacing, align)
 }

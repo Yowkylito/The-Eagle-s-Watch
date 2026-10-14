@@ -4,7 +4,6 @@ package ph.eagleswatch.content
 data class Tier(
     val index: String,
     val name: String,
-    val short: String,
     val tagline: String,
     val reveals: List<String>,
     val sources: String,
@@ -18,7 +17,6 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "00",
         name = "Citizens",
-        short = "CITIZENS",
         tagline = "Where every peso begins. Income tax, VAT, and local business and property taxes all start with you.",
         reveals = listOf(
             "What kinds of taxes fund each level of government",
@@ -29,7 +27,6 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "01",
         name = "Barangay",
-        short = "BARANGAY",
         tagline = "The first level of government, and the closest to your daily life.",
         reveals = listOf(
             "Funds received and how the barangay budget is planned",
@@ -48,7 +45,6 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "02",
         name = "City / Municipality",
-        short = "CITY / MUN.",
         tagline = "Local taxes plus the national tax allotment, spent on the services you use.",
         reveals = listOf(
             "Annual budget and the income it relies on",
@@ -67,7 +63,6 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "03",
         name = "Province",
-        short = "PROVINCE",
         tagline = "Roads, hospitals and programs that span many towns.",
         reveals = listOf(
             "Provincial budget and capital projects",
@@ -86,7 +81,6 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "04",
         name = "National Agencies",
-        short = "AGENCIES",
         tagline = "Departments and bureaus carrying out the national budget.",
         reveals = listOf(
             "General Appropriations Act line items by agency",
@@ -105,7 +99,6 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "05",
         name = "Office of the President",
-        short = "PRESIDENT",
         tagline = "The top of the trail: the office and the agencies attached to it.",
         reveals = listOf(
             "Office budget and attached agencies",
@@ -123,19 +116,19 @@ val trail: List<Tier> = listOf(
     ),
 )
 
-data class Principle(val index: String, val verb: String, val title: String, val body: String)
+data class Principle(val index: String, val title: String, val body: String)
 
 val principles: List<Principle> = listOf(
     Principle(
-        "01", "SOURCE", "Official records only",
+        "01", "Official records only",
         "We connect public documents: budgets, audit reports, procurement awards and local disclosure postings.",
     ),
     Principle(
-        "02", "TRACE", "One trail, every level",
+        "02", "One trail, every level",
         "Funds are linked from the national budget down to the barangay, so a single peso can be followed across offices.",
     ),
     Principle(
-        "03", "VERIFY", "Receipts for every figure",
+        "03", "Receipts for every figure",
         "Each number links back to the document it came from. Where a source is missing, we say so.",
     ),
 )

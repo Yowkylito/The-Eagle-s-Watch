@@ -41,7 +41,7 @@ private val WideBreakpoint = 860.dp
 fun App() {
     val fonts = rememberEagleFonts()
     CompositionLocalProvider(LocalFonts provides fonts) {
-        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Ink)) {
+        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Paper)) {
             val density = LocalDensity.current
             val wide = maxWidth >= WideBreakpoint
             val gutter = when {

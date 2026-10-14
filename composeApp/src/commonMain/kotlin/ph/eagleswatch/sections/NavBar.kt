@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.Role
@@ -35,8 +33,11 @@ import ph.eagleswatch.ui.EagleColors
 import ph.eagleswatch.ui.LocalEnv
 import ph.eagleswatch.ui.Page
 import ph.eagleswatch.ui.Pill
+import ph.eagleswatch.ui.softShadow
 
-/** Floating top bar. Transparent over the hero, then fades to a frosted ink bar as the page scrolls. */
+val NavHeight = 68.dp
+
+/** Top bar. Sits on the hero, then gains a paper background and hairline once the page scrolls. */
 @Composable
 fun NavBar(modifier: Modifier = Modifier) {
     val env = LocalEnv.current
@@ -44,10 +45,10 @@ fun NavBar(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .drawBehind {
-                val amount = (env.scroll.value / 160f).coerceIn(0f, 1f)
-                drawRect(EagleColors.Ink.copy(alpha = 0.86f * amount))
+                val amount = (env.scroll.value / 120f).coerceIn(0f, 1f)
+                drawRect(EagleColors.Paper.copy(alpha = 0.94f * amount))
                 drawLine(
-                    color = EagleColors.Line.copy(alpha = EagleColors.Line.alpha * amount),
+                    color = EagleColors.Line.copy(alpha = amount),
                     start = Offset(0f, size.height - 0.5f),
                     end = Offset(size.width, size.height - 0.5f),
                     strokeWidth = 1f,
@@ -74,8 +75,8 @@ fun NavBar(modifier: Modifier = Modifier) {
                     Spacer(Modifier.width(28.dp))
                     NavLink("Explorer") { env.navigate("explorer") }
                     Spacer(Modifier.width(28.dp))
-                    NavLink("Principles") { env.navigate("principles") }
-                    Spacer(Modifier.width(32.dp))
+                    NavLink("How it works") { env.navigate("principles") }
+                    Spacer(Modifier.width(28.dp))
                 }
                 Pill(label = "Start tracing", onClick = { env.navigate("explorer") }, primary = true, compact = true)
             }
@@ -83,20 +84,15 @@ fun NavBar(modifier: Modifier = Modifier) {
     }
 }
 
-val NavHeight = 68.dp
-
 @Composable
 private fun Brand(modifier: Modifier = Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Image(
             painter = painterResource(Res.drawable.eagle_logo),
             contentDescription = "The Eagle's Watch logo",
-            modifier = Modifier.size(38.dp).clip(RoundedCornerShape(10.dp)),
+            modifier = Modifier.size(38.dp).softShadow(RoundedCornerShape(9.dp), elevation = 6.dp),
         )
-        Column {
-            EText("THE EAGLE'S WATCH", size = 13.sp, weight = FontWeight.Bold, letterSpacing = 2.sp)
-            EText("BANTAY BUWIS", size = 9.sp, mono = true, color = EagleColors.Gold, letterSpacing = 2.4.sp)
-        }
+        EText("The Eagle's Watch", serif = true, size = 19.sp)
     }
 }
 
@@ -104,8 +100,8 @@ private fun Brand(modifier: Modifier = Modifier) {
 private fun NavLink(label: String, onClick: () -> Unit) {
     EText(
         text = label,
-        size = 14.sp,
-        weight = FontWeight.Medium,
+        size = 15.sp,
+        weight = FontWeight.SemiBold,
         color = EagleColors.Body,
         modifier = Modifier.clickable(
             interactionSource = remember { MutableInteractionSource() },
