@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ph.eagleswatch.content.Day
 import ph.eagleswatch.content.Project
+import ph.eagleswatch.content.Report
+import ph.eagleswatch.content.Subject
 import ph.eagleswatch.content.projects
 
 enum class Reaction { Like, Dislike }
@@ -28,6 +30,10 @@ class CitizenState {
         private set
 
     var notes: Map<String, List<Note>> by mutableStateOf(projects.associate { it.id to readNotes(it.id) }.filterValues { it.isNotEmpty() })
+        private set
+
+    /** Reports filed from this device, newest first. */
+    var reports: List<Report> by mutableStateOf(readReports())
         private set
 
     fun isWatching(project: Project): Boolean = project.id in watched
@@ -62,7 +68,13 @@ class CitizenState {
         writePref(KEY_NOTES + project.id, list.joinToString(RECORD) { "${it.day.epochDay}$FIELD${it.text}" })
     }
 
+    fun addReport(report: Report) {
+        reports = listOf(report.cleaned()) + reports
+        writePref(KEY_REPORTS, reports.joinToString(RECORD) { it.encode() })
+    }
+
     private companion object {
+        const val KEY_REPORTS = "reports"
         const val KEY_WATCHED = "watched"
         const val KEY_REACTIONS = "reactions"
         const val KEY_NOTES = "notes."
@@ -70,6 +82,55 @@ class CitizenState {
         // ASCII record and unit separators: they cannot be typed, so they never clash with feedback text.
         const val RECORD = "\u001E"
         const val FIELD = "\u001F"
+        const val GROUP = "\u001D"
+
+        fun String.clean(): String = filter { it >= ' ' || it == '\n' }.trim()
+
+        fun Report.cleaned() = copy(
+            target = target.clean(),
+            involved = involved.clean(),
+            issues = issues.map { it.clean() }.filter { it.isNotEmpty() },
+            place = place.clean(),
+            time = time.clean(),
+            details = details.clean(),
+            contact = contact?.clean()?.takeIf { it.isNotEmpty() },
+        )
+
+        fun Report.encode(): String = listOf(
+            reference,
+            filed.epochDay.toString(),
+            subject.name,
+            projectId.orEmpty(),
+            target,
+            involved,
+            issues.joinToString(GROUP),
+            place,
+            time,
+            facts.joinToString(GROUP),
+            details,
+            contact.orEmpty(),
+        ).joinToString(FIELD)
+
+        fun readReports(): List<Report> =
+            readPref(KEY_REPORTS).orEmpty().split(RECORD).mapNotNull { record ->
+                val f = record.split(FIELD)
+                if (f.size != 12) return@mapNotNull null
+                val subject = Subject.entries.firstOrNull { it.name == f[2] } ?: return@mapNotNull null
+                Report(
+                    reference = f[0],
+                    filed = Day.ofEpochDay(f[1].toLongOrNull() ?: return@mapNotNull null),
+                    subject = subject,
+                    projectId = f[3].ifEmpty { null },
+                    target = f[4],
+                    involved = f[5],
+                    issues = f[6].split(GROUP).filter { it.isNotEmpty() },
+                    place = f[7],
+                    time = f[8],
+                    facts = f[9].split(GROUP).filter { it.isNotEmpty() },
+                    details = f[10],
+                    contact = f[11].ifEmpty { null },
+                )
+            }
 
         fun readReactions(): Map<String, Reaction> =
             readPref(KEY_REACTIONS).orEmpty().split(",").mapNotNull { entry ->

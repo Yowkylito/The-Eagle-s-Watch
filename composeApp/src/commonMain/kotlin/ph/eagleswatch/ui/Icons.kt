@@ -23,7 +23,7 @@ import ph.eagleswatch.content.Category
 enum class Glyph {
     Search, Filter, Eye, EyeFilled, Share, Back, Close, ChevronRight,
     ThumbUp, ThumbUpFilled, ThumbDown, ThumbDownFilled, Chat, Calendar, Peso, Agency, Person,
-    Verified, Pin, Clock, Document, Bell, Info, HardHat, Plus,
+    Verified, Pin, Clock, Document, Bell, BellFilled, Info, HardHat, Plus, Flag, FlagFilled, Check, Camera,
     All, Road, Bridge, School, Health, Water, Flood, Farm, Court,
 }
 
@@ -39,14 +39,15 @@ val Category.glyph: Glyph
         Category.Buildings -> Glyph.Court
     }
 
+/** @param weight stroke width in grid units; selected tabs use a heavier line. */
 @Composable
-fun Icon(glyph: Glyph, modifier: Modifier = Modifier, tint: Color = EagleColors.Ink, size: Dp = 24.dp) {
-    Canvas(modifier.size(size)) { Pen(this, tint).draw(glyph) }
+fun Icon(glyph: Glyph, modifier: Modifier = Modifier, tint: Color = EagleColors.Ink, size: Dp = 24.dp, weight: Float = 1.8f) {
+    Canvas(modifier.size(size)) { Pen(this, tint, weight).draw(glyph) }
 }
 
-private class Pen(val scope: DrawScope, val color: Color) {
+private class Pen(val scope: DrawScope, val color: Color, weight: Float) {
     val u = scope.size.width / 24f
-    val stroke = Stroke(width = 1.8f * u, cap = StrokeCap.Round, join = StrokeJoin.Round)
+    val stroke = Stroke(width = weight * u, cap = StrokeCap.Round, join = StrokeJoin.Round)
 
     fun o(x: Float, y: Float) = Offset(x * u, y * u)
 
@@ -142,10 +143,23 @@ private class Pen(val scope: DrawScope, val color: Color) {
                 path { m(14f, 3f); l(14f, 8f); l(19f, 8f) }
                 line(8.5f, 13f, 15.5f, 13f); line(8.5f, 16.5f, 13.5f, 16.5f)
             }
-            Glyph.Bell -> {
-                path { m(6f, 16.5f); l(6f, 11f); q(6f, 5f, 12f, 5f); q(18f, 5f, 18f, 11f); l(18f, 16.5f); l(19.5f, 18f); l(4.5f, 18f); z() }
+            Glyph.Bell, Glyph.BellFilled -> {
+                val shape: P.() -> Unit = { m(6f, 16.5f); l(6f, 11f); q(6f, 5f, 12f, 5f); q(18f, 5f, 18f, 11f); l(18f, 16.5f); l(19.5f, 18f); l(4.5f, 18f); z() }
+                if (glyph == Glyph.BellFilled) path(fill = true, block = shape)
+                path(block = shape)
                 path { m(10f, 20.5f); q(12f, 22f, 14f, 20.5f) }
                 line(12f, 3f, 12f, 5f)
+            }
+            Glyph.Flag, Glyph.FlagFilled -> {
+                line(5f, 21f, 5f, 3.5f)
+                val flag: P.() -> Unit = { m(5f, 4.5f); q(8.5f, 2.5f, 12f, 4.5f); q(15.5f, 6.5f, 19.5f, 4.5f); l(19.5f, 13.5f); q(15.5f, 15.5f, 12f, 13.5f); q(8.5f, 11.5f, 5f, 13.5f); z() }
+                if (glyph == Glyph.FlagFilled) path(fill = true, block = flag)
+                path(block = flag)
+            }
+            Glyph.Check -> path { m(4.5f, 12.5f); l(9.5f, 17.5f); l(19.5f, 7f) }
+            Glyph.Camera -> {
+                path { m(3f, 8.5f); q(3f, 7f, 4.5f, 7f); l(7.5f, 7f); l(9f, 4.5f); l(15f, 4.5f); l(16.5f, 7f); l(19.5f, 7f); q(21f, 7f, 21f, 8.5f); l(21f, 18f); q(21f, 19.5f, 19.5f, 19.5f); l(4.5f, 19.5f); q(3f, 19.5f, 3f, 18f); z() }
+                circle(12f, 13f, 3.6f)
             }
             Glyph.Info -> { circle(12f, 12f, 9f); line(12f, 11f, 12f, 16.5f); circle(12f, 7.8f, 0.6f, fill = true) }
             Glyph.HardHat -> {

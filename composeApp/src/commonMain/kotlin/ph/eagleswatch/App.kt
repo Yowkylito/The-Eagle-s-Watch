@@ -31,6 +31,7 @@ import ph.eagleswatch.screens.AboutScreen
 import ph.eagleswatch.screens.ArticleScreen
 import ph.eagleswatch.screens.ExploreScreen
 import ph.eagleswatch.screens.ProjectScreen
+import ph.eagleswatch.screens.ReportScreen
 import ph.eagleswatch.screens.UpdatesScreen
 import ph.eagleswatch.screens.WatchlistScreen
 import ph.eagleswatch.state.CitizenState
@@ -45,10 +46,13 @@ import ph.eagleswatch.ui.rememberEagleFonts
 private sealed interface Route {
     data class ProjectPage(val id: String) : Route
     data class Article(val id: String) : Route
+
+    /** Report a problem; about a project when [projectId] is set. */
+    data class Report(val projectId: String?) : Route
 }
 
 /**
- * Four tabs (Explore, Watchlist, Updates, About), with project pages and articles stacked on top.
+ * Four tabs (Explore, Watchlist, Updates, About), with project pages, articles and reports stacked on top.
  * Phones navigate from a bottom bar; wide windows use tabs in the top bar.
  */
 @Composable
@@ -64,12 +68,13 @@ fun App() {
             val citizen = remember { CitizenState() }
             val openProject: (Project) -> Unit = { stack.add(Route.ProjectPage(it.id)) }
             val back: () -> Unit = { stack.removeLastOrNull() }
+            val report: (String?) -> Unit = { stack.add(Route.Report(it)) }
             PlatformBackHandler(enabled = stack.isNotEmpty(), onBack = back)
 
             CompositionLocalProvider(LocalLayout provides layout) {
                 Box(Modifier.fillMaxSize()) {
                     Column(Modifier.fillMaxSize()) {
-                        if (wide) TopBar(current = destination, onSelect = { destination = it })
+                        if (wide) TopBar(current = destination, onSelect = { destination = it }, onReport = { report(null) })
                         Crossfade(
                             targetState = destination,
                             modifier = Modifier.weight(1f),
@@ -84,10 +89,10 @@ fun App() {
                                     onExplore = { destination = Destination.Explore },
                                 )
                                 Destination.Updates -> UpdatesScreen(citizen, onOpen = openProject)
-                                Destination.About -> AboutScreen()
+                                Destination.About -> AboutScreen(citizen)
                             }
                         }
-                        if (!wide) BottomNav(current = destination, onSelect = { destination = it })
+                        if (!wide) BottomNav(current = destination, onSelect = { destination = it }, onReport = { report(null) })
                     }
 
                     // Pages slide in from the right as they open and back out as they close.
@@ -110,9 +115,15 @@ fun App() {
                                     citizen = citizen,
                                     onBack = back,
                                     onArticle = { stack.add(Route.Article(project.id)) },
+                                    onReport = { report(project.id) },
                                 )
                             }
                             is Route.Article -> projectById(route.id)?.let { ArticleScreen(it, onBack = back) }
+                            is Route.Report -> ReportScreen(
+                                projectId = route.projectId,
+                                onSubmit = citizen::addReport,
+                                onClose = back,
+                            )
                         }
                     }
                 }

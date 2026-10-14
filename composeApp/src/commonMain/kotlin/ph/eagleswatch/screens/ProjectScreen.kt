@@ -57,6 +57,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -103,6 +104,7 @@ fun ProjectScreen(
     citizen: CitizenState,
     onBack: () -> Unit,
     onArticle: () -> Unit,
+    onReport: () -> Unit,
 ) {
     val layout = LocalLayout.current
     var writing by remember { mutableStateOf(false) }
@@ -117,6 +119,8 @@ fun ProjectScreen(
                 ) {
                     CircleButton(Glyph.Back, "Back", onBack)
                     Spacer(Modifier.weight(1f))
+                    CircleButton(Glyph.Flag, "Report this project", onReport)
+                    Spacer(Modifier.width(10.dp))
                     CircleButton(Glyph.Share, "Share", share)
                     Spacer(Modifier.width(10.dp))
                     WatchButton(project, citizen)
@@ -125,7 +129,7 @@ fun ProjectScreen(
                     Gallery(project, height = 460.dp, rounded = true)
                     Spacer(Modifier.height(28.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(56.dp)) {
-                        Column(Modifier.weight(1f)) { Details(project, citizen, onArticle, onFeedback = { writing = true }) }
+                        Column(Modifier.weight(1f)) { Details(project, citizen, onArticle, onFeedback = { writing = true }, onReport = onReport) }
                         Column(Modifier.width(360.dp)) { SideCard(project, citizen, onFeedback = { writing = true }) }
                     }
                     Spacer(Modifier.height(48.dp))
@@ -142,13 +146,15 @@ fun ProjectScreen(
                         ) {
                             CircleButton(Glyph.Back, "Back", onBack)
                             Spacer(Modifier.weight(1f))
+                            CircleButton(Glyph.Flag, "Report this project", onReport)
+                            Spacer(Modifier.width(10.dp))
                             CircleButton(Glyph.Share, "Share", share)
                             Spacer(Modifier.width(10.dp))
                             WatchButton(project, citizen)
                         }
                     }
                     Column(Modifier.padding(horizontal = layout.gutter, vertical = 22.dp)) {
-                        Details(project, citizen, onArticle, onFeedback = { writing = true })
+                        Details(project, citizen, onArticle, onFeedback = { writing = true }, onReport = onReport)
                     }
                 }
                 BottomBar(project, citizen, onFeedback = { writing = true })
@@ -225,7 +231,7 @@ private fun Section(title: String? = null, content: @Composable ColumnScope.() -
 }
 
 @Composable
-private fun Details(project: Project, citizen: CitizenState, onArticle: () -> Unit, onFeedback: () -> Unit) {
+private fun Details(project: Project, citizen: CitizenState, onArticle: () -> Unit, onFeedback: () -> Unit, onReport: () -> Unit) {
     val today = remember { Day.today() }
     EText(
         text = "Sample project for the design preview. It is not a real government record.",
@@ -294,6 +300,24 @@ private fun Details(project: Project, citizen: CitizenState, onArticle: () -> Un
             lineHeight = 19.sp,
             color = EagleColors.Muted,
         )
+    }
+
+    Section {
+        // As on a listing page: the report link sits at the very end, easy to find but out of the way.
+        Row(
+            Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .clickable(role = Role.Button, onClick = onReport)
+                .padding(vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Glyph.FlagFilled, tint = EagleColors.Ink, size = 20.dp)
+            Spacer(Modifier.width(12.dp))
+            Column {
+                EText("Report this project", size = 16.sp, weight = FontWeight.SemiBold, decoration = TextDecoration.Underline)
+                EText("A problem with the works, the money or the people in charge", size = 14.sp, lineHeight = 20.sp, color = EagleColors.Body)
+            }
+        }
     }
 }
 

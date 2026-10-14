@@ -20,11 +20,12 @@ The interface takes its patterns from Airbnb's iOS app: a search-first explore f
 |---|---|
 | **Explore** | Search by project, place or agency. Tabs for Roads, Bridges, Schools, Health, Water, Flood control, Farms and Buildings, plus filters for level of government and status. Each card has swipeable pictures, a status badge, a watch (eye) button, citizen approval, place, proposing agency, dates and budget. |
 | **Project page** | Picture gallery with captions; budget, funding source, dates, days left or overdue; proposing and implementing agencies, contractor and the officials responsible; work done against time used and funds released; the purpose and a full article; a timeline of updates with pictures; likes, dislikes and citizen feedback; and the records each figure will link to. A bottom bar keeps Like, Dislike and Feedback in reach. |
+| **Report** | Raised in the middle of the bottom bar, and as a flag on every project page. A six-step flow, nearly all taps: what is being reported (the project, someone on it, its agency, an LGU, a public servant, or something else), what happened, who is involved (the project's officials as cards, LGU level and names, or a public servant's role), where and when, optional details, then review. Every list has "Other" or "Not sure" for the rest. Reports are anonymous unless the citizen chooses to share contact details, and each gets a reference number listed under About → My reports. |
 | **Watchlist** | Projects the citizen follows. |
 | **Updates** | Every agency post, newest first, for all projects or only watched ones. |
-| **About** | What the project promises, what agencies will be able to do, the public records it plans to connect, and how to contribute. |
+| **About** | The citizen's reports, what the project promises, what agencies will be able to do, the public records it plans to connect, and how to contribute. The tab wears the app's own icon. |
 
-Watched projects, reactions and feedback are saved on the device until accounts and a server exist.
+Watched projects, reactions, feedback and reports are saved on the device until accounts and a server exist. Nothing is sent anywhere in the preview.
 
 Project pictures are drawn in code, not photographs: each kind of project is illustrated at the stage its works had reached, from a cleared site to a finished structure. When agencies post real photos, these give way to them.
 
@@ -43,10 +44,10 @@ Style: white pages, flag blue for actions, gold for approval, red only for the "
 ```
 composeApp/src/commonMain/kotlin/ph/eagleswatch/
 ├── App.kt              # layout breakpoint, tabs, and the stack of project and article pages
-├── content/            # Projects.kt (model and sample projects), Day.kt (dates), Content.kt (facts, principles)
+├── content/            # Projects.kt (sample projects), Reports.kt (report choices), Day.kt, Content.kt (facts, principles)
 ├── nav/                # top bar, bottom bar, destinations
-├── screens/            # Explore, Project, Article, Watchlist, Updates, About
-├── state/              # CitizenState (watchlist, reactions, feedback), platform storage, share and back
+├── screens/            # Explore, Project, Article, Report, Watchlist, Updates, About
+├── state/              # CitizenState (watchlist, reactions, feedback, reports), platform storage, share and back
 └── ui/                 # theme, icons, project illustrations, buttons, badges
 ```
 

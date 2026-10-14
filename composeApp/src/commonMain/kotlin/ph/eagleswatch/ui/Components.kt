@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +33,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.layout.Layout
@@ -38,6 +41,7 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
@@ -249,6 +253,7 @@ fun ActionButton(
     modifier: Modifier = Modifier,
     style: ButtonStyle = ButtonStyle.Primary,
     glyph: Glyph? = null,
+    enabled: Boolean = true,
 ) {
     val source = remember { MutableInteractionSource() }
     val hovered by source.collectIsHoveredAsState()
@@ -256,6 +261,7 @@ fun ActionButton(
     val primary = style == ButtonStyle.Primary
     val background by animateColorAsState(
         targetValue = when {
+            !enabled && primary -> EagleColors.Line
             primary && hovered -> EagleColors.BlueDeep
             primary -> EagleColors.Blue
             hovered -> EagleColors.Surface
@@ -264,15 +270,19 @@ fun ActionButton(
         animationSpec = tween(140),
         label = "button-bg",
     )
-    val content = if (primary) Color.White else EagleColors.Ink
+    val content = when {
+        !enabled -> EagleColors.Muted
+        primary -> Color.White
+        else -> EagleColors.Ink
+    }
     Row(
         modifier
             .focusRing(shape)
             .clip(shape)
             .background(background)
-            .then(if (primary) Modifier else Modifier.border(1.dp, EagleColors.Ink, shape))
+            .then(if (primary) Modifier else Modifier.border(1.dp, if (enabled) EagleColors.Ink else EagleColors.Line, shape))
             .hoverable(source)
-            .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick)
+            .clickable(interactionSource = source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 13.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -354,5 +364,42 @@ fun ProgressBar(fraction: Float, modifier: Modifier = Modifier, color: Color = E
 fun Avatar(initials: String, modifier: Modifier = Modifier, size: Dp = 48.dp, color: Color = EagleColors.Blue) {
     Box(modifier.size(size).clip(CircleShape).background(color), contentAlignment = Alignment.Center) {
         EText(initials, size = (size.value * 0.36f).sp, weight = FontWeight.SemiBold, color = Color.White)
+    }
+}
+
+/** A bordered text box with a placeholder. Multi-line unless [singleLine]. */
+@Composable
+fun TextInput(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = false,
+    minHeight: Dp = if (singleLine) 0.dp else 110.dp,
+    maxLength: Int = 1000,
+) {
+    val fonts = LocalFonts.current
+    var focused by remember { mutableStateOf(false) }
+    Box(
+        modifier
+            .fillMaxWidth()
+            .heightIn(min = minHeight)
+            .border(if (focused) 2.dp else 1.dp, if (focused) EagleColors.Ink else EagleColors.Line, RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 13.dp),
+    ) {
+        if (value.isEmpty()) {
+            EText(placeholder, size = 16.sp, lineHeight = 23.sp, color = EagleColors.Muted, maxLines = if (singleLine) 1 else Int.MAX_VALUE, ellipsis = singleLine)
+        }
+        BasicTextField(
+            value = value,
+            onValueChange = { if (it.length <= maxLength) onValueChange(if (singleLine) it.replace("\n", " ") else it) },
+            singleLine = singleLine,
+            textStyle = TextStyle(fontFamily = fonts.sans, fontSize = 16.sp, lineHeight = 23.sp, color = EagleColors.Ink),
+            cursorBrush = SolidColor(EagleColors.Blue),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { focused = it.isFocused }
+                .semantics { contentDescription = placeholder },
+        )
     }
 }

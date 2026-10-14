@@ -35,6 +35,7 @@ import ph.eagleswatch.content.plannedSources
 import ph.eagleswatch.content.principles
 import ph.eagleswatch.resources.Res
 import ph.eagleswatch.resources.eagle_logo
+import ph.eagleswatch.state.CitizenState
 import ph.eagleswatch.ui.Chip
 import ph.eagleswatch.ui.Divider
 import ph.eagleswatch.ui.EText
@@ -48,7 +49,7 @@ import ph.eagleswatch.ui.Wrap
 
 /** What the project is, what it promises, and how to take part. */
 @Composable
-fun AboutScreen(modifier: Modifier = Modifier) {
+fun AboutScreen(citizen: CitizenState, modifier: Modifier = Modifier) {
     val layout = LocalLayout.current
     val uriHandler = LocalUriHandler.current
     Column(modifier.fillMaxSize().background(EagleColors.Page).verticalScroll(rememberScrollState())) {
@@ -68,6 +69,18 @@ fun AboutScreen(modifier: Modifier = Modifier) {
                         lineHeight = 24.sp,
                         color = Color.White.copy(alpha = 0.9f),
                     )
+                }
+            }
+
+            if (citizen.reports.isNotEmpty()) {
+                Spacer(Modifier.height(28.dp))
+                EText("My reports", size = 21.sp, weight = FontWeight.SemiBold)
+                Spacer(Modifier.height(4.dp))
+                EText("Kept on this device. Keep the reference number if you follow up by phone.", size = 14.sp, lineHeight = 20.sp, color = EagleColors.Body)
+                Spacer(Modifier.height(14.dp))
+                citizen.reports.forEach { report ->
+                    ReportCard(report)
+                    Spacer(Modifier.height(12.dp))
                 }
             }
 
