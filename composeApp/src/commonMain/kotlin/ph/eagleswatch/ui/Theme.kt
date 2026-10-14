@@ -12,6 +12,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
@@ -47,6 +48,13 @@ object EagleColors {
     val RedSoft = Color(0xFFFBE7EA)
     val Gold = Color(0xFFF4B41A)
     val GoldDeep = Color(0xFFB77D00)
+    val GoldSoft = Color(0xFFFFF3D3)
+
+    /** Coin faces in a split, largest share first, so gold always marks where most of the money goes. */
+    val Slices = listOf(Gold, Blue, Color(0xFF6F96F2), Color(0xFF1C9C86), Ink)
+
+    /** A coin whose share has not been revealed yet. */
+    val CoinBlank = Color(0xFFDCE1EF)
 }
 
 @Immutable
@@ -84,6 +92,7 @@ fun EText(
     letterSpacing: TextUnit = TextUnit.Unspecified,
     align: TextAlign = TextAlign.Start,
     maxLines: Int = Int.MAX_VALUE,
+    decoration: TextDecoration? = null,
 ) {
     val fonts = LocalFonts.current
     BasicText(
@@ -98,6 +107,7 @@ fun EText(
             lineHeight = lineHeight,
             letterSpacing = letterSpacing,
             textAlign = align,
+            textDecoration = decoration,
         ),
     )
 }
@@ -114,6 +124,7 @@ fun EText(
     letterSpacing: TextUnit = TextUnit.Unspecified,
     align: TextAlign = TextAlign.Start,
     maxLines: Int = Int.MAX_VALUE,
+    decoration: TextDecoration? = null,
 ) {
-    EText(AnnotatedString(text), modifier, size, color, weight, display, lineHeight, letterSpacing, align, maxLines)
+    EText(AnnotatedString(text), modifier, size, color, weight, display, lineHeight, letterSpacing, align, maxLines, decoration)
 }

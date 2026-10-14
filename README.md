@@ -18,11 +18,11 @@ Three screens, one tap apart. No long scroll: phones get a bottom navigation bar
 
 | Screen | What it does |
 |---|---|
-| **Trace** | "Follow every peso." A gold peso coin rides a rail of six levels: Citizens, Barangay, City / Municipality, Province, National Agencies, Office of the President. Swipe the card, tap a level, or press *Next* and the coin follows. Each level shows how a sample ₱100 is allocated, what will be visible there, and the public sources it relies on. |
+| **Trace** | "Follow every peso." The citizen sets roughly what they paid in taxes this year (a coin slider on a log scale, with presets), then a gold peso coin carries that amount up a rail of six levels: Citizens, Barangay, City / Municipality, Province, National Agencies, Office of the President. At each level the citizen calls where most of the money goes, then 100 coins flip over to show the split in their own pesos. Visited levels turn gold on the rail, the top of the trail keeps score, and a daily "Alam mo ba?" card shows a real rule of public finance with the law behind it. Progress and the amount are kept on the device, so a return visit picks up where it stopped. |
 | **How it works** | Three promises (official records only, one trail across every level, a receipt for every figure) and the public sources the project plans to connect. |
 | **Join in** | Open-source links, a way to suggest a data source, and where the project stands today. |
 
-Style: flag-blue stage, cool paper, a gold coin as the one bright accent. Barlow Condensed for headlines, Inter for text. The app icon source lives in [`design/icon`](design/icon).
+Style: flag-blue stage with the flag's sun behind the pitch (it turns as the coin climbs), cool paper, gold coins as the bright accent. Barlow Condensed for headlines, Inter for text. The app icon source lives in [`design/icon`](design/icon).
 
 ## Tech
 
@@ -36,11 +36,12 @@ Style: flag-blue stage, cool paper, a gold coin as the one bright accent. Barlow
 
 ```
 composeApp/src/commonMain/kotlin/ph/eagleswatch/
-├── App.kt              # layout breakpoint, current screen, shared level pager state
-├── content/Content.kt  # tiers, principles, sample data (all copy lives here)
+├── App.kt              # layout breakpoint, current screen, shared pager and progress state
+├── content/Content.kt  # tiers, sample splits, tax kinds, daily facts, principles
 ├── nav/                # top bar, bottom bar, destinations
-├── screens/            # TraceScreen, HowItWorksScreen, JoinScreen
-└── ui/                 # theme, text, buttons, focus ring, layout info
+├── screens/            # TraceScreen + TracePages, HowItWorksScreen, JoinScreen
+├── state/              # TraceProgress, saved on the device (platform storage in each target)
+└── ui/                 # theme, text, buttons, coin grid, coin slider, rolling amount, sun
 ```
 
 ## Run

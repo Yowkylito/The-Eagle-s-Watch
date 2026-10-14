@@ -3,7 +3,7 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [main, ccr-265da269-vexky1, ccr-c56771b4-rfzny1]
+    branches: [main, ccr-265da269-vexky1, ccr-c56771b4-rfzny1, ccr-5d1dcef7-r4a5zw]
     paths-ignore: ["**.md", "docs/**", "licenses/**"]
 
 concurrency:

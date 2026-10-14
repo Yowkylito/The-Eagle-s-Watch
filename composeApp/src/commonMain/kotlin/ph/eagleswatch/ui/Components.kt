@@ -28,8 +28,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -88,6 +92,100 @@ fun Pill(
                 PillTone.Ghost -> Color.White
             },
         )
+    }
+}
+
+/** Outlined rounded button for picking one of a few options. Filled while [selected]. */
+@Composable
+fun ChoiceChip(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+) {
+    val source = remember { MutableInteractionSource() }
+    val hovered by source.collectIsHoveredAsState()
+    val background by animateColorAsState(
+        targetValue = when {
+            selected -> EagleColors.Blue
+            hovered -> EagleColors.BlueSoft
+            else -> EagleColors.Card
+        },
+        animationSpec = tween(140),
+        label = "choice-bg",
+    )
+    val shape = RoundedCornerShape(50)
+    Box(
+        modifier = modifier
+            .focusRing(shape)
+            .clip(shape)
+            .background(background)
+            .border(1.5.dp, if (selected) EagleColors.Blue else EagleColors.Blue.copy(alpha = 0.3f), shape)
+            .hoverable(source)
+            .clickable(interactionSource = source, indication = null, role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        EText(label, size = 15.sp, weight = FontWeight.SemiBold, color = if (selected) Color.White else EagleColors.Blue)
+    }
+}
+
+/** A quiet, underlined action for secondary choices next to a [Pill]. */
+@Composable
+fun TextAction(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    color: Color = EagleColors.Blue,
+) {
+    val shape = RoundedCornerShape(8.dp)
+    Box(
+        modifier
+            .focusRing(shape, color)
+            .clip(shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = 10.dp, horizontal = 4.dp),
+    ) {
+        EText(
+            text = label,
+            size = 15.sp,
+            weight = FontWeight.SemiBold,
+            color = color,
+            decoration = TextDecoration.Underline,
+        )
+    }
+}
+
+/** Lays children out left to right, starting a new row when the current one is full. */
+@Composable
+fun Wrap(modifier: Modifier = Modifier, spacing: Dp = 8.dp, content: @Composable () -> Unit) {
+    Layout(content, modifier) { measurables, constraints ->
+        val gap = spacing.roundToPx()
+        val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+        val rows = mutableListOf<MutableList<Placeable>>()
+        var rowWidth = 0
+        placeables.forEach { placeable ->
+            if (rows.isEmpty() || rowWidth + gap + placeable.width > constraints.maxWidth) {
+                rows += mutableListOf(placeable)
+                rowWidth = placeable.width
+            } else {
+                rows.last() += placeable
+                rowWidth += gap + placeable.width
+            }
+        }
+        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else rows.maxOfOrNull { row -> row.sumOf { it.width } + gap * (row.size - 1) } ?: 0
+        val height = rows.sumOf { row -> row.maxOf { it.height } } + gap * (rows.size - 1).coerceAtLeast(0)
+        layout(width, height) {
+            var y = 0
+            rows.forEach { row ->
+                var x = 0
+                row.forEach { placeable ->
+                    placeable.placeRelative(x, y)
+                    x += placeable.width + gap
+                }
+                y += row.maxOf { it.height } + gap
+            }
+        }
     }
 }
 

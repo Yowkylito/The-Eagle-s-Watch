@@ -25,6 +25,7 @@ import ph.eagleswatch.nav.TopBar
 import ph.eagleswatch.screens.HowItWorksScreen
 import ph.eagleswatch.screens.JoinScreen
 import ph.eagleswatch.screens.TraceScreen
+import ph.eagleswatch.state.TraceProgress
 import ph.eagleswatch.ui.EagleColors
 import ph.eagleswatch.ui.Layout
 import ph.eagleswatch.ui.LocalFonts
@@ -44,8 +45,9 @@ fun App() {
             val layout = remember(wide) { Layout(wide = wide, gutter = if (wide) 40.dp else 20.dp) }
 
             var destination by remember { mutableStateOf(Destination.Trace) }
-            // Hoisted so the chosen level survives switching screens.
+            // Hoisted so the chosen level and the citizen's progress survive switching screens.
             val pager = rememberPagerState(pageCount = { trail.size })
+            val progress = remember { TraceProgress() }
 
             CompositionLocalProvider(LocalLayout provides layout) {
                 Column(Modifier.fillMaxSize()) {
@@ -59,7 +61,7 @@ fun App() {
                         label = "screen",
                     ) { shown ->
                         when (shown) {
-                            Destination.Trace -> TraceScreen(pager)
+                            Destination.Trace -> TraceScreen(pager, progress)
                             Destination.HowItWorks -> HowItWorksScreen()
                             Destination.Join -> JoinScreen()
                         }

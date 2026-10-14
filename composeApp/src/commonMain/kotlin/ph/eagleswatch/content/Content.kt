@@ -11,6 +11,8 @@ data class Tier(
     val sources: String,
     /** Placeholder allocation of a sample ₱100 at this level. Null for the taxpayer, who is the source. */
     val sample: List<Allocation>? = null,
+    /** Who does the spending, to finish "How ... would split your pesos". */
+    val spender: String = name,
 )
 
 data class Allocation(val label: String, val pesos: Int)
@@ -20,16 +22,14 @@ val trail: List<Tier> = listOf(
         index = "00",
         name = "Citizens",
         short = "Citizens",
-        tagline = "Where every peso begins. Income tax, VAT, and local business and property taxes all start with you.",
-        reveals = listOf(
-            "What kinds of taxes fund each level of government",
-            "How collected taxes are shared between national and local government",
-        ),
+        tagline = "Where every peso begins. Set roughly what you paid in taxes this year, then follow it up the trail.",
+        reveals = emptyList(),
         sources = "BIR, BOC and local treasurers' public reports",
     ),
     Tier(
         index = "01",
         name = "Barangay",
+        spender = "your barangay",
         short = "Barangay",
         tagline = "The first level of government, and the closest to your daily life.",
         reveals = listOf(
@@ -49,6 +49,7 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "02",
         name = "City / Municipality",
+        spender = "your city or town",
         short = "City",
         tagline = "Local taxes plus the national tax allotment, spent on the services you use.",
         reveals = listOf(
@@ -68,6 +69,7 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "03",
         name = "Province",
+        spender = "your province",
         short = "Province",
         tagline = "Roads, hospitals and programs that span many towns.",
         reveals = listOf(
@@ -87,6 +89,7 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "04",
         name = "National Agencies",
+        spender = "national agencies",
         short = "National",
         tagline = "Departments and bureaus carrying out the national budget.",
         reveals = listOf(
@@ -106,6 +109,7 @@ val trail: List<Tier> = listOf(
     Tier(
         index = "05",
         name = "Office of the President",
+        spender = "the Office of the President",
         short = "President",
         tagline = "The top of the trail: the office and the agencies attached to it.",
         reveals = listOf(
@@ -148,6 +152,76 @@ val plannedSources: List<String> = listOf(
     "LGU Full Disclosure",
     "DBM budget documents",
     "Open data portals",
+)
+
+/** Where the citizen's pesos come from, shown on the first stop of the trail. */
+data class TaxKind(val name: String, val body: String)
+
+val taxKinds: List<TaxKind> = listOf(
+    TaxKind("Income tax", "Withheld from your pay, or filed once a year if you run a business."),
+    TaxKind("Value-added tax", "12% of the price of most goods and services you buy."),
+    TaxKind("Local taxes", "Business permits, real property tax and fees paid to your city or town."),
+)
+
+/** Starting amount for "your taxes this year", before the citizen sets their own. */
+const val DEFAULT_TAX_PESOS = 10_000L
+const val MIN_TAX_PESOS = 1_000L
+const val MAX_TAX_PESOS = 1_000_000L
+val taxPresets: List<Long> = listOf(5_000L, 10_000L, 50_000L, 250_000L)
+
+/** A rule of Philippine public finance, with the law that sets it. These are real, not sample data. */
+data class Fact(val text: String, val source: String)
+
+/** One is shown each day under "Alam mo ba?" so there is something new on every visit. */
+val facts: List<Fact> = listOf(
+    Fact(
+        "Barangays get 20% of the national tax share set aside for local governments. Provinces and cities get 23% each, municipalities 34%.",
+        "Local Government Code, Sec. 285",
+    ),
+    Fact(
+        "Local governments receive 40% of national taxes, based on what was collected three years earlier.",
+        "Local Government Code, Sec. 284; Mandanas-Garcia ruling",
+    ),
+    Fact(
+        "At least 20% of every local government's tax allotment must go to development projects.",
+        "Local Government Code, Sec. 287",
+    ),
+    Fact(
+        "Every barangay sets aside 10% of its general fund for the Sangguniang Kabataan.",
+        "SK Reform Act of 2015 (RA 10742), Sec. 20",
+    ),
+    Fact(
+        "Local governments reserve at least 5% of their regular income for disaster risk reduction and response.",
+        "RA 10121, Sec. 21",
+    ),
+    Fact(
+        "Every agency and local government must spend at least 5% of its budget on gender and development.",
+        "Magna Carta of Women (RA 9710), Sec. 36",
+    ),
+    Fact(
+        "Local governments must post their budgets, spending and procurement where the public can see them.",
+        "DILG Full Disclosure Policy",
+    ),
+    Fact(
+        "The Commission on Audit examines the accounts of every government office, and its annual audit reports are public.",
+        "1987 Constitution, Art. IX-D",
+    ),
+    Fact(
+        "The national budget becomes law each year as the General Appropriations Act.",
+        "1987 Constitution, Art. VI, Sec. 25",
+    ),
+    Fact(
+        "The first ₱250,000 of a person's taxable income each year is not taxed.",
+        "TRAIN Law (RA 10963)",
+    ),
+    Fact(
+        "VAT is 12% of the price of most goods and services sold in the country.",
+        "National Internal Revenue Code, Sec. 106 and 108",
+    ),
+    Fact(
+        "Government purchases must be posted on PhilGEPS, the public procurement portal.",
+        "New Government Procurement Act (RA 12009)",
+    ),
 )
 
 const val GITHUB_URL = "https://github.com/yowkylito/the-eagle-s-watch"
