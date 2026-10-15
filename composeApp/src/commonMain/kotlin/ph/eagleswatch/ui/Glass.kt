@@ -90,7 +90,7 @@ fun glassEdge(strength: Float = 0.18f): Brush =
     Brush.verticalGradient(listOf(Color.White.copy(alpha = (strength * 1.8f).coerceAtMost(1f)), Color.White.copy(alpha = strength * 0.35f)))
 
 /**
- * The dark band's background, the scene from the app icon: deep night jade, warmed by the coral sun rising
+ * The dark band's background: deep night jade, the same jade as the app icon's tile, warmed by a coral sun rising
  * at the upper right and a jade glow from the lower left. It gives the glass something to sit on without
  * drawing attention.
  */

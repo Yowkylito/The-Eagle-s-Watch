@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Rasterises the master SVGs into every platform icon. Run from the repository root:
-#   python3 design/icon/eagle.py design/icon && design/icon/export.sh
+# Rasterises the icon SVGs into every platform icon. Run from the repository root:
+#   design/icon/export.sh
 # Needs node with the playwright package, and ImageMagick.
 set -euo pipefail
 R="$(cd "$(dirname "$0")/../.." && pwd)"; D="$R/design/icon"; A="$R/composeApp/src"
@@ -13,7 +13,6 @@ for pair in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
 done
 png "$D/adaptive-foreground.svg" "$A/androidMain/res/drawable-xxxhdpi/ic_launcher_foreground.png" 432
 png "$D/adaptive-background.svg" "$A/androidMain/res/drawable-xxxhdpi/ic_launcher_background.png" 432
-png "$D/adaptive-monochrome.svg" "$A/androidMain/res/drawable-xxxhdpi/ic_launcher_monochrome.png" 432
 # iOS: the App Store rejects icons with an alpha channel.
 png "$D/icon-square.svg" "$T/ios.png" 1024
 convert "$T/ios.png" -background '#0C2B2B' -alpha remove -alpha off "$R/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png"
@@ -26,5 +25,5 @@ convert "$T/touch.png" -background '#0C2B2B' -alpha remove -alpha off "$W/apple-
 for s in 16 32 48; do png "$D/icon.svg" "$T/fav-$s.png" $s; done
 convert "$T/fav-16.png" "$T/fav-32.png" "$T/fav-48.png" "$W/favicon.ico"
 png "$D/icon.svg" "$R/docs/icon.png" 512
-png "$D/icon-square.svg" "$A/commonMain/composeResources/drawable/eagle_logo.png" 512
+png "$D/icon.svg" "$A/commonMain/composeResources/drawable/eagle_logo.png" 512
 echo exported

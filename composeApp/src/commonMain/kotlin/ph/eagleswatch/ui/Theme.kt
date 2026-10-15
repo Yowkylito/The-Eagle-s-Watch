@@ -33,7 +33,7 @@ import ph.eagleswatch.resources.inter_tight_semibold
  *
  * Warm paper and warm ink, with one signature colour: jade, after the Philippine jade vine. Jade marks
  * everything you can act on (buttons, links, the selected tab, focus) and nothing else. Header bands sit on a
- * deep night jade lit by a coral sun, the same scene as the app icon.
+ * deep night jade, the darker side of the app icon's jade tile, lit by a coral sun.
  *
  * Status colours are kept clear of jade: blue for ongoing work, amber for delays, red for suspensions and a
  * leaf green for completed work. They always travel with a shape and a label, never alone. Every text colour
@@ -70,7 +70,7 @@ object EagleColors {
     val OnNight = Color(0xFFFFFFFF)
     val OnNightMuted = Color(0xFFB3CCC7)
 
-    /** The coral sun from the icon: the light on the dark bands and the sample-data tag. Never a status. */
+    /** A coral sun: the warm light on the dark bands and the sample-data tag. Never a status. */
     val Sun = Color(0xFFFF7A59)
 
     /** The flag's gold, for the flag mark only. */
