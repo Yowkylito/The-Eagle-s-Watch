@@ -89,7 +89,7 @@ fun PageBar(
             .fillMaxWidth()
             .then(if (transparent) Modifier else Modifier.background(EagleColors.Night))
             .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(horizontal = 4.dp, vertical = 4.dp),
+            .padding(start = 4.dp, end = 4.dp, top = 12.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(backGlyph, backDescription, onClick = onBack, tint = content)

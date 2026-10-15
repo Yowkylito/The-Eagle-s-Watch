@@ -321,7 +321,7 @@ private fun Hero(
             Column {
                 Column(Modifier.padding(horizontal = layout.gutter)) {
                     if (!layout.wide) {
-                        Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().padding(top = 8.dp).height(56.dp), verticalAlignment = Alignment.CenterVertically) {
                             Image(painterResource(Res.drawable.eagle_logo), contentDescription = null, modifier = Modifier.size(28.dp).clip(RoundedCornerShape(8.dp)))
                             Spacer(Modifier.width(10.dp))
                             EText("The Eagle's Watch", modifier = Modifier.weight(1f), display = true, size = 18.sp, weight = FontWeight.SemiBold, color = EagleColors.OnNight, heading = true)

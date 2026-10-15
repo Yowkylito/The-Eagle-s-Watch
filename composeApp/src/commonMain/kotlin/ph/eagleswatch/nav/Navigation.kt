@@ -24,12 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.widthIn
 import dev.chrisbanes.haze.hazeEffect
 import ph.eagleswatch.ui.GlassStyles
+import ph.eagleswatch.ui.glassEdge
 import ph.eagleswatch.ui.LocalHaze
 import ph.eagleswatch.ui.TabBarHeight
 import ph.eagleswatch.ui.aurora
@@ -110,8 +110,9 @@ private fun TopTab(destination: Destination, selected: Boolean, onClick: () -> U
 }
 
 /**
- * Phone navigation: a floating glass bar. Content scrolls underneath it and shows through, blurred. The
- * selected tab sits in a tinted capsule. On Android before 12 the bar is a near-opaque white instead.
+ * Phone navigation: a floating night-jade glass bar, matching the header bands. Content scrolls underneath it
+ * and shows through, blurred. The selected tab is a bright jade capsule. On Android before 12 the bar is a
+ * near-opaque night jade instead.
  */
 @Composable
 fun BottomNav(current: Destination, onSelect: (Destination) -> Unit, modifier: Modifier = Modifier) {
@@ -125,8 +126,8 @@ fun BottomNav(current: Destination, onSelect: (Destination) -> Unit, modifier: M
                 .height(TabBarHeight)
                 .shadow(elevation = 20.dp, shape = shape, ambientColor = Color(0x291C1A16), spotColor = Color(0x291C1A16))
                 .clip(shape)
-                .then(if (haze != null) Modifier.hazeEffect(haze, GlassStyles.Light) else Modifier.background(Color.White.copy(alpha = 0.96f)))
-                .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.95f), Color.White.copy(alpha = 0.4f))), shape)
+                .then(if (haze != null) Modifier.hazeEffect(haze, GlassStyles.Bar) else Modifier.background(EagleColors.Night.copy(alpha = 0.97f)))
+                .border(1.dp, glassEdge(0.14f), shape)
                 .padding(5.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
@@ -144,14 +145,14 @@ private fun NavTab(destination: Destination, selected: Boolean, modifier: Modifi
         modifier
             .fillMaxHeight()
             .clip(shape)
-            .background(if (selected) EagleColors.Accent.copy(alpha = 0.12f) else Color.Transparent)
-            .tappable(onClick = onClick, role = Role.Tab, selected = selected, tint = EagleColors.Accent.copy(alpha = 0.08f), shape = shape),
+            .background(if (selected) EagleColors.AccentBright else Color.Transparent)
+            .tappable(onClick = onClick, role = Role.Tab, selected = selected, tint = Color.White.copy(alpha = 0.10f), shape = shape),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
             glyph = if (selected) destination.selectedGlyph else destination.glyph,
-            tint = if (selected) EagleColors.Accent else EagleColors.Body,
+            tint = if (selected) EagleColors.Night else EagleColors.OnNightMuted,
             size = 22.dp,
             weight = if (selected) 2.3f else 1.8f,
         )
@@ -160,7 +161,7 @@ private fun NavTab(destination: Destination, selected: Boolean, modifier: Modifi
             destination.label,
             size = EagleType.Caption,
             weight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-            color = if (selected) EagleColors.Accent else EagleColors.Body,
+            color = if (selected) EagleColors.Night else EagleColors.OnNightMuted,
             maxLines = 1,
         )
     }

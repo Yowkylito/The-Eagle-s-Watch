@@ -53,7 +53,7 @@ There are no approval ratings, likes or reaction counts: nothing in the app is a
 
 A modern mobile product, built so the numbers and their sources lead.
 
-- **Glass**: a floating, frosted tab bar that content scrolls beneath; a frosted page bar on project pages; a frosted source sheet; and translucent glass panels on the header bands. Backdrop blur comes from [Haze](https://github.com/chrisbanes/haze). On Android before 12, where the platform cannot blur, these surfaces fall back to a near-opaque tint.
+- **Glass**: a floating tab bar of frosted night jade that content scrolls beneath, with the selected tab in bright jade; a frosted page bar on project pages; a frosted source sheet; and translucent glass panels on the header bands. Backdrop blur comes from [Haze](https://github.com/chrisbanes/haze). On Android before 12, where the platform cannot blur, these surfaces fall back to a near-opaque tint.
 - **Header bands**: every screen starts on a deep night-jade band, warmed by a coral sun at the upper right and a jade glow at the lower left. On Explore it carries the headline figure, the approved contract value of the listed projects, and a status bar built from the real counts. On a project page it carries the title, place and three key figures.
 - **Cards on paper**: content sits in round-cornered warm-white cards on a warm paper canvas, with no borders or illustrations. Imagery is limited to real site photographs with their date, caption and source; where none exist the record says so.
 - **Type**: Inter Tight for titles and figures, Inter for text, with tabular numerals so figures line up. Nothing a citizen reads is under 12sp.

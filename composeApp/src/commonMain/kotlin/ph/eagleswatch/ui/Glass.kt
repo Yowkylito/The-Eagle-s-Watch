@@ -34,19 +34,19 @@ import dev.chrisbanes.haze.HazeTint
 
 /** Blur styles, one per kind of surface. */
 object GlassStyles {
-    /** The floating tab bar and other light glass over the canvas. */
-    val Light = HazeStyle(
-        backgroundColor = EagleColors.Canvas,
-        tint = HazeTint(EagleColors.Page.copy(alpha = 0.62f)),
-        blurRadius = 24.dp,
-        noiseFactor = 0.04f,
-        fallbackTint = HazeTint(EagleColors.Page.copy(alpha = 0.96f)),
-    )
-
     /** Bars that sit on the dark bands: the status-bar strip and the page bar. */
     val Night = HazeStyle(
         backgroundColor = EagleColors.Night,
         tint = HazeTint(EagleColors.Night.copy(alpha = 0.74f)),
+        blurRadius = 24.dp,
+        noiseFactor = 0.03f,
+        fallbackTint = HazeTint(EagleColors.Night.copy(alpha = 0.97f)),
+    )
+
+    /** The floating tab bar: night jade, dark enough to read over light content. */
+    val Bar = HazeStyle(
+        backgroundColor = EagleColors.Night,
+        tint = HazeTint(EagleColors.Night.copy(alpha = 0.86f)),
         blurRadius = 24.dp,
         noiseFactor = 0.03f,
         fallbackTint = HazeTint(EagleColors.Night.copy(alpha = 0.97f)),

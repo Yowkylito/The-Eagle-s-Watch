@@ -200,7 +200,7 @@ private fun Hero(project: Project, today: Day) {
             Column(Modifier.padding(horizontal = layout.gutter).padding(top = 4.dp, bottom = 22.dp)) {
                 // Room for the frosted page bar that floats over the top of the band.
                 Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
-                Spacer(Modifier.height(56.dp))
+                Spacer(Modifier.height(64.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusTag(project.status)
                     if (project.sample) SampleTag(onDark = true)
