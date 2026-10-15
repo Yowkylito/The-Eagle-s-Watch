@@ -163,6 +163,7 @@ fun Button(
     enabled: Boolean = true,
     compact: Boolean = false,
     fillWidth: Boolean = false,
+    trailingGlyph: Glyph? = null,
 ) {
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
@@ -221,6 +222,10 @@ fun Button(
             color = content,
             maxLines = 1,
         )
+        if (trailingGlyph != null) {
+            Spacer(Modifier.width(4.dp))
+            Icon(trailingGlyph, tint = content, size = 16.dp, weight = 2.2f)
+        }
     }
 }
 

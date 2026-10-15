@@ -109,7 +109,7 @@ fun ProjectScreen(
             onBack = onBack,
             actions = {
                 IconButton(Glyph.Share, "Share this record", onClick = { shareText(project.title, shareSummary(project)) }, iconSize = 20.dp)
-                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, iconSize = 20.dp)
+                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, iconSize = 20.dp, label = "Report")
                 IconButton(
                     glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
                     description = if (watching) "Stop watching this project" else "Watch this project",
@@ -604,7 +604,7 @@ private fun ProvenanceSection(project: Project) {
             val url = source.url
             LinkRow(
                 title = source.name,
-                glyph = Glyph.External,
+                glyph = Glyph.Document,
                 onClick = if (url != null) ({ uriHandler.openUri(url) }) else null,
                 external = true,
                 unavailable = "No link on file",

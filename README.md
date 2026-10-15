@@ -25,6 +25,15 @@ The app lists public infrastructure projects with their contracts, schedules, re
 
 Watched projects and reports are saved on the device until accounts and a server exist. Nothing is sent anywhere in the preview.
 
+## Screens
+
+Captured from the web build by the Screenshots workflow; the full set is in [`docs/review`](docs/review).
+
+<p>
+  <img src="docs/review/phone-01-explore.png" alt="Explore screen on a phone" width="300">
+  <img src="docs/review/phone-05-project.png" alt="Project page on a phone" width="300">
+</p>
+
 ## How a record is labelled
 
 Every figure carries one of four labels, and the app never implies more than the label says:

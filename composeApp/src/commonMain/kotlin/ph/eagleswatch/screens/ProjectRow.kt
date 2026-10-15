@@ -227,6 +227,6 @@ private fun EvidenceLine(project: Project) {
     Row(Modifier.padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Start) {
         Icon(verification.glyph, tint = verification.tone.color, size = 13.dp, weight = 2.2f)
         Spacer(Modifier.width(5.dp))
-        EText(parts.joinToString(" · "), size = EagleType.Caption, lineHeight = 16.sp, color = EagleColors.Muted, maxLines = 1, ellipsis = true)
+        EText(parts.joinToString(" · "), size = EagleType.Caption, lineHeight = 16.sp, color = EagleColors.Muted, maxLines = 2, ellipsis = true)
     }
 }

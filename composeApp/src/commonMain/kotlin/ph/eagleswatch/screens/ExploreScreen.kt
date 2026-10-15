@@ -451,6 +451,7 @@ private fun Summary(
                     text = buildString {
                         append(if (amounts.isEmpty()) "No contract amounts on file" else "${compactPesos(total)} in approved contracts")
                         if (missing > 0 && amounts.isNotEmpty()) append(" · $missing without an amount")
+                        append(" · as of ${dataset.asOf.format()}")
                     },
                     size = EagleType.Caption,
                     lineHeight = 16.sp,
@@ -463,7 +464,7 @@ private fun Summary(
                 onClick = onToggleSort,
                 style = ButtonStyle.Quiet,
                 compact = true,
-                glyph = Glyph.Sort,
+                trailingGlyph = Glyph.ChevronDown,
             )
         }
         AnimatedVisibility(visible = showSort) {

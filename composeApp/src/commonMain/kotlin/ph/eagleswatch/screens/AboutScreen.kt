@@ -230,9 +230,9 @@ private fun AboutSection(title: String, content: @Composable () -> Unit) {
 
 @Composable
 private fun Legend(verification: Verification, text: String) {
-    Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.Top) {
-        VerificationTag(verification, Modifier.width(150.dp))
-        Spacer(Modifier.width(10.dp))
-        EText(text, size = EagleType.Secondary, lineHeight = 19.sp, color = EagleColors.Body, modifier = Modifier.weight(1f))
+    Column(Modifier.padding(vertical = 5.dp)) {
+        VerificationTag(verification)
+        Spacer(Modifier.height(4.dp))
+        EText(text, size = EagleType.Secondary, lineHeight = 19.sp, color = EagleColors.Body)
     }
 }

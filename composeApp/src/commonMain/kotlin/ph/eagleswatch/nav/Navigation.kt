@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -99,6 +100,7 @@ private fun TopTab(destination: Destination, selected: Boolean, onClick: () -> U
     Box(
         Modifier
             .fillMaxHeight()
+            .width(IntrinsicSize.Max)
             .tappable(onClick = onClick, role = Role.Tab, selected = selected)
             .padding(horizontal = 12.dp),
     ) {
