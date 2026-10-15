@@ -241,7 +241,7 @@ fun ReportScreen(
                     text = "${steps.indexOf(step) + 1} of ${steps.size}",
                     modifier = Modifier.padding(end = 12.dp),
                     size = EagleType.Secondary,
-                    color = EagleColors.Muted,
+                    color = EagleColors.OnNavyMuted,
                     tabular = true,
                 )
             },

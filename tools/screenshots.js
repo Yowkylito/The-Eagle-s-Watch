@@ -58,39 +58,49 @@ async function shot(page, name) {
     await sleep(12000); // Wasm boot and font loading.
     await diagnose(page);
     await shot(page, 'phone-01-explore');
-    await page.mouse.wheel(0, 700);
-    await shot(page, 'phone-02-explore-scrolled');
-    await page.mouse.wheel(0, -3000);
+    await page.mouse.wheel(0, 520);
+    await shot(page, 'phone-02-explore-cards');
+    await page.mouse.wheel(0, 900);
+    await shot(page, 'phone-03-explore-more');
+    await page.mouse.wheel(0, -5000);
     await sleep(600);
-    await page.mouse.click(300, 72); // Filters
-    await shot(page, 'phone-03-filters');
-    await page.mouse.wheel(0, 600);
-    await shot(page, 'phone-04-filters-scrolled');
-    await page.mouse.click(26, 26); // Close
+    await page.mouse.click(320, 292); // More filters, beside the search box
+    await shot(page, 'phone-04-filters');
+    await page.mouse.click(28, 28); // Close
     await sleep(800);
-    await page.mouse.click(180, 350); // First project row
+    await page.mouse.wheel(0, 380);
+    await sleep(500);
+    await page.mouse.click(150, 330); // A project card
     await shot(page, 'phone-05-project');
-    for (let i = 6; i <= 12; i++) {
+    await page.mouse.wheel(0, 650);
+    await shot(page, 'phone-06-project');
+    await page.mouse.click(300, 300); // A source badge, if one is under the pointer
+    await shot(page, 'phone-07-source-sheet');
+    await page.mouse.click(180, 120); // Scrim closes the sheet
+    await sleep(600);
+    for (let i = 8; i <= 12; i++) {
       await page.mouse.wheel(0, 700);
       await shot(page, 'phone-' + String(i).padStart(2, '0') + '-project');
     }
     await page.mouse.wheel(0, -9000);
     await sleep(600);
-    await page.mouse.click(26, 26); // Back
+    await page.mouse.click(28, 28); // Back
     await sleep(800);
-    await page.mouse.click(135, 752); // Watchlist tab
+    await page.mouse.click(135, 746); // Watchlist tab
     await shot(page, 'phone-13-watchlist');
-    await page.mouse.click(225, 752); // Updates tab
+    await page.mouse.click(225, 746); // Updates tab
     await shot(page, 'phone-14-updates');
-    await page.mouse.click(315, 752); // About tab
+    await page.mouse.click(315, 746); // About tab
     await shot(page, 'phone-15-about');
-    await page.mouse.wheel(0, 900);
+    await page.mouse.wheel(0, 800);
     await shot(page, 'phone-16-about');
-    await page.mouse.wheel(0, 900);
+    await page.mouse.wheel(0, 800);
     await shot(page, 'phone-17-about');
-    await page.mouse.click(45, 752); // Explore tab
+    await page.mouse.click(45, 746); // Explore tab
     await sleep(600);
-    await page.mouse.click(300, 24); // Report
+    await page.mouse.wheel(0, -5000);
+    await sleep(400);
+    await page.mouse.click(300, 28); // Report
     await shot(page, 'phone-18-report');
     await phone.close();
 
@@ -102,7 +112,7 @@ async function shot(page, name) {
     await sleep(12000);
     await diagnose(w);
     await shot(w, 'wide-01-explore');
-    await w.mouse.click(400, 460); // A project row
+    await w.mouse.click(300, 560); // A project card
     await shot(w, 'wide-02-project');
     await w.mouse.wheel(0, 900);
     await shot(w, 'wide-03-project');

@@ -22,83 +22,105 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import ph.eagleswatch.resources.Res
-import ph.eagleswatch.resources.barlow_condensed_bold
-import ph.eagleswatch.resources.barlow_condensed_semibold
+import ph.eagleswatch.resources.inter_medium
 import ph.eagleswatch.resources.inter_regular
 import ph.eagleswatch.resources.inter_semibold
+import ph.eagleswatch.resources.inter_tight_bold
+import ph.eagleswatch.resources.inter_tight_semibold
 
 /**
- * Colour tokens. White pages, hairline separators, ink text. The flag's blue is the one action colour:
- * links, primary buttons, the selected tab. Status colours always travel with a glyph and a label, never
- * alone. Gold appears only in the brand mark.
+ * Colour tokens.
  *
- * Every text colour here reads at 4.5:1 or better on [Page] and on its paired soft background.
+ * A soft grey canvas with white cards, near-black ink, and one confident blue for actions. Headers that carry
+ * the big numbers sit on a deep navy taken from the flag. Status colours always travel with a shape and a
+ * label, never alone. Every text colour reads at 4.5:1 or better on the surface it is used on.
  */
 object EagleColors {
+    /** Behind everything. Cards sit on it. */
+    val Canvas = Color(0xFFF2F4F7)
+
+    /** Cards, sheets, the bottom bar. */
     val Page = Color(0xFFFFFFFF)
 
-    /** Quiet panels: notices, skeletons, the pressed state of a row. */
-    val Surface = Color(0xFFF3F4F8)
-    val SurfaceStrong = Color(0xFFE7E9F0)
+    /** Fills inside a card: tracks, idle chips, icon tiles, skeletons. */
+    val Surface = Color(0xFFF2F4F7)
+    val SurfaceStrong = Color(0xFFE4E7EC)
 
-    /** Hairlines between rows, and the stronger line around inputs. */
-    val Line = Color(0xFFD9DDE6)
-    val LineStrong = Color(0xFFB2B9C9)
+    val Line = Color(0xFFE4E7EC)
+    val LineStrong = Color(0xFFCDD3DD)
 
-    val Ink = Color(0xFF111A33)
-    val Body = Color(0xFF3C4560)
-    val Muted = Color(0xFF5D667F)
+    val Ink = Color(0xFF0B1220)
+    val Body = Color(0xFF344054)
+    val Muted = Color(0xFF5B6577)
 
-    val Blue = Color(0xFF1440C2)
-    val BlueDeep = Color(0xFF0E2F96)
-    val BlueSoft = Color(0xFFE6EBFA)
+    val Blue = Color(0xFF1D4ED8)
+    val BlueDeep = Color(0xFF1E40AF)
+    val BlueSoft = Color(0xFFE8EEFF)
 
-    val Gold = Color(0xFFF4B41A)
+    /** Header bands that hold the headline figures. */
+    val Navy = Color(0xFF0A1A3A)
+    val NavyRaised = Color(0xFF16284D)
+    val OnNavy = Color(0xFFFFFFFF)
+    val OnNavyMuted = Color(0xFFB4BFD4)
 
-    val Red = Color(0xFFB4213A)
-    val RedSoft = Color(0xFFFBE9EC)
-    val Green = Color(0xFF14704F)
-    val GreenSoft = Color(0xFFE1F2EA)
-    val Amber = Color(0xFF8A4300)
-    val AmberSoft = Color(0xFFFCEBD6)
+    /** The eagle's gold, for the brand mark only. */
+    val Gold = Color(0xFFF5B700)
 
-    /** Behind sheets and dialogs. */
-    val Scrim = Color(0x73000000)
+    val Green = Color(0xFF067647)
+    val GreenSoft = Color(0xFFE5F6EC)
+    val Amber = Color(0xFFB54708)
+    val AmberSoft = Color(0xFFFEF0E1)
+    val Red = Color(0xFFB42318)
+    val RedSoft = Color(0xFFFDECEA)
+
+    /** Bar and dot fills for each status: stronger than the text colours, readable on navy and on white. */
+    val FillBlue = Color(0xFF3B6EF5)
+    val FillAmber = Color(0xFFF59E0B)
+    val FillRed = Color(0xFFEF4444)
+    val FillGreen = Color(0xFF16A34A)
+    val FillGrey = Color(0xFF98A2B3)
+
+    val Scrim = Color(0x8C0B1220)
 }
 
-/** The type scale. Sizes are in sp; nothing a citizen reads is smaller than [Caption]. */
+/** The type scale, in sp. Nothing a citizen reads is smaller than [Caption]. */
 object EagleType {
-    /** Page titles, in Barlow Condensed. */
-    val Display: TextUnit = 26.sp
+    /** The headline figure on a header band. */
+    val Hero: TextUnit = 40.sp
 
-    /** Large figures such as a contract amount, in Barlow Condensed. */
-    val Figure: TextUnit = 22.sp
+    /** Page titles. */
+    val Display: TextUnit = 28.sp
 
-    /** Row and section titles. */
+    /** Figures in a stat strip. */
+    val Figure: TextUnit = 20.sp
+
+    /** Card titles. */
     val Title: TextUnit = 17.sp
     val Body: TextUnit = 15.sp
     val Secondary: TextUnit = 14.sp
-
-    /** Section labels and tags. */
     val Label: TextUnit = 13.sp
     val Caption: TextUnit = 12.sp
 }
 
 /** Spacing and shape tokens on a 4dp grid. */
 object EagleMetrics {
-    val Radius: Dp = 4.dp
-    val RadiusSmall: Dp = 3.dp
+    val RadiusCard: Dp = 16.dp
+    val Radius: Dp = 12.dp
+    val RadiusChip: Dp = 10.dp
+    val RadiusSmall: Dp = 6.dp
 
     /** Minimum size of anything tappable. */
-    val Touch: Dp = 44.dp
+    val Touch: Dp = 48.dp
 
-    /** Horizontal page padding on phones; wide windows use [Layout.gutter]. */
     val PhoneGutter: Dp = 16.dp
     val WideGutter: Dp = 32.dp
 
-    /** The widest a column of text or a list is allowed to be. */
+    /** Gap between cards in a list. */
+    val CardGap: Dp = 12.dp
+
+    /** The widest a column of cards is allowed to be. */
     val ContentMax: Dp = 720.dp
-    val ReadingMax: Dp = 600.dp
+    val ReadingMax: Dp = 640.dp
 }
 
 @Immutable
@@ -108,22 +130,23 @@ val LocalFonts = staticCompositionLocalOf<EagleFonts> { error("EagleFonts not pr
 
 @Composable
 fun rememberEagleFonts(): EagleFonts {
-    val displayBold = Font(Res.font.barlow_condensed_bold, FontWeight.Bold)
-    val displaySemibold = Font(Res.font.barlow_condensed_semibold, FontWeight.SemiBold)
+    val tightSemibold = Font(Res.font.inter_tight_semibold, FontWeight.SemiBold)
+    val tightBold = Font(Res.font.inter_tight_bold, FontWeight.Bold)
     val regular = Font(Res.font.inter_regular, FontWeight.Normal)
+    val medium = Font(Res.font.inter_medium, FontWeight.Medium)
     val semibold = Font(Res.font.inter_semibold, FontWeight.SemiBold)
-    return remember(displayBold, displaySemibold, regular, semibold) {
+    return remember(tightSemibold, tightBold, regular, medium, semibold) {
         EagleFonts(
-            display = FontFamily(displayBold, displaySemibold),
-            sans = FontFamily(regular, semibold),
+            display = FontFamily(tightSemibold, tightBold),
+            sans = FontFamily(regular, medium, semibold),
         )
     }
 }
 
 /**
- * Text in the house fonts: Barlow Condensed for [display] titles and figures, Inter for everything else.
- * [tabular] switches on tabular numerals so columns of figures line up. [heading] marks the text as a
- * heading for screen readers.
+ * Text in the house fonts: Inter Tight for [display] titles and figures, Inter for everything else.
+ * [tabular] switches on tabular numerals so figures line up. [heading] marks the text as a heading for
+ * screen readers. Display text is tracked slightly tighter, the way large type should be.
  */
 @Composable
 fun EText(
@@ -143,6 +166,12 @@ fun EText(
     heading: Boolean = false,
 ) {
     val fonts = LocalFonts.current
+    val tracking = when {
+        letterSpacing != TextUnit.Unspecified -> letterSpacing
+        display && size.value >= 24f -> (-0.6).sp
+        display -> (-0.2).sp
+        else -> TextUnit.Unspecified
+    }
     BasicText(
         text = text,
         modifier = if (heading) modifier.semantics { heading() } else modifier,
@@ -155,7 +184,7 @@ fun EText(
             fontFamily = if (display) fonts.display else fonts.sans,
             fontFeatureSettings = if (tabular) "tnum" else null,
             lineHeight = lineHeight,
-            letterSpacing = letterSpacing,
+            letterSpacing = tracking,
             textAlign = align,
             textDecoration = decoration,
         ),

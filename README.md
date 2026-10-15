@@ -51,16 +51,18 @@ There are no approval ratings, likes or reaction counts: nothing in the app is a
 
 ## Design system
 
-A restrained, editorial, data-first system for small screens.
+A modern mobile product, built so the numbers and their sources lead.
 
-- **Colour**: white pages, hairline separators, ink text. The flag's blue is the one action colour (links, primary buttons, selected tabs). Status and provenance colours always travel with a mark or glyph and a label. Gold appears only in the brand mark. Every text colour reads at 4.5:1 or better on its background.
-- **Type**: Inter for text, Barlow Condensed for page titles and large figures. Body text is 15sp, nothing a citizen reads is under 12sp, and figures use tabular numerals so columns line up.
-- **Shape and depth**: 4dp corners, 1dp borders, no shadows, no pills, no gradients and no illustrations. Imagery is limited to real site photographs with their date, caption and source; where none exist the record says so.
-- **Spacing**: a 4dp grid, 16dp gutters on phones and 32dp on wide windows, content capped at a readable width.
-- **Controls**: every tap target is at least 44dp, every control has pressed and keyboard-focus states, icon controls carry accessible names, and status is never conveyed by colour alone.
-- **States**: loading skeletons (shown only when the wait is long enough to notice), empty states that say what to do, error states with retry, and explicit "Not on file" values.
+- **Header bands**: every screen starts on a deep navy band taken from the flag. On Explore it carries the headline figure, the approved contract value of the listed projects, and a status bar built from the real counts. On a project page it carries the title, place and three key figures.
+- **Cards on a canvas**: content sits in white cards on a soft grey canvas, with no borders, shadows, gradients or illustrations. Imagery is limited to real site photographs with their date, caption and source; where none exist the record says so.
+- **Type**: Inter Tight for titles and figures, Inter for text, with tabular numerals so figures line up. Nothing a citizen reads is under 12sp.
+- **Colour**: one blue for actions, five status colours that always travel with a distinct shape (outline, half disc, triangle, square, ticked disc) and a label, and the eagle's gold only for the brand. Text reads at 4.5:1 or better.
+- **Provenance one tap away**: each figure carries a small source badge (Verified, Agency-reported, Community-reported, Not available). Tapping it opens a sheet with the source, the date and what the label means.
+- **Progress at a glance**: work done and contract time used share one track, with a plain chip when a project falls behind, finishes late or has its deadline moved.
+- **Controls**: every tap target is at least 48dp, with pressed and keyboard-focus states and accessible names. The bottom bar follows Android's navigation pattern.
+- **States**: loading skeletons, empty states that say what to do, error states with retry, and explicit "Not on file" values.
 
-Tokens live in `ui/Theme.kt`; the components in `ui/Components.kt`; the glyphs, drawn in code so no icon library is needed, in `ui/Icons.kt`; the locator map in `ui/Locator.kt`.
+Tokens live in `ui/Theme.kt`, components in `ui/Components.kt`, glyphs (drawn in code, no icon library) in `ui/Icons.kt`, and the locator map in `ui/Locator.kt`.
 
 ## Tech
 
@@ -105,4 +107,4 @@ Production web bundle: `./gradlew :composeApp:wasmJsBrowserDistribution`. The Gi
 
 ## Licenses
 
-Fonts (Barlow Condensed, Inter) are licensed under the SIL Open Font License 1.1. See [`licenses/`](licenses).
+Fonts (Inter, Inter Tight) are licensed under the SIL Open Font License 1.1. See [`licenses/`](licenses).

@@ -1,20 +1,26 @@
 package ph.eagleswatch.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,36 +47,38 @@ import ph.eagleswatch.state.CitizenState
 import ph.eagleswatch.state.shareText
 import ph.eagleswatch.ui.Button
 import ph.eagleswatch.ui.ButtonStyle
+import ph.eagleswatch.ui.Card
+import ph.eagleswatch.ui.CardHeader
 import ph.eagleswatch.ui.EText
 import ph.eagleswatch.ui.EagleColors
 import ph.eagleswatch.ui.EagleMetrics
 import ph.eagleswatch.ui.EagleType
-import ph.eagleswatch.ui.FactGrid
-import ph.eagleswatch.ui.FactItem
 import ph.eagleswatch.ui.Glyph
 import ph.eagleswatch.ui.Hairline
 import ph.eagleswatch.ui.Icon
 import ph.eagleswatch.ui.IconButton
+import ph.eagleswatch.ui.IconTile
+import ph.eagleswatch.ui.Initials
+import ph.eagleswatch.ui.KeyValueRow
 import ph.eagleswatch.ui.LinkRow
 import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.Locator
 import ph.eagleswatch.ui.Meter
-import ph.eagleswatch.ui.MeterRow
-import ph.eagleswatch.ui.Notice
-import ph.eagleswatch.ui.NoticeTone
-import ph.eagleswatch.ui.ProvenanceLine
-import ph.eagleswatch.ui.SectionLabel
+import ph.eagleswatch.ui.SampleTag
+import ph.eagleswatch.ui.SourceBadge
+import ph.eagleswatch.ui.Stat
 import ph.eagleswatch.ui.StatusTag
-import ph.eagleswatch.ui.VerificationTag
+import ph.eagleswatch.ui.Tag
+import ph.eagleswatch.ui.WorkTrack
 import ph.eagleswatch.ui.compactPesos
 import ph.eagleswatch.ui.consumeTouches
 import ph.eagleswatch.ui.days
+import ph.eagleswatch.ui.fill
 import ph.eagleswatch.ui.fixed
 import ph.eagleswatch.ui.formatCoordinates
 import ph.eagleswatch.ui.formatPesos
 import ph.eagleswatch.ui.glyph
 import ph.eagleswatch.ui.percent
-import ph.eagleswatch.ui.tone
 
 /** A public map page for the coordinates; opens in the browser or a maps app on every platform. */
 private fun mapUrl(c: Coordinates): String {
@@ -79,19 +89,18 @@ private fun mapUrl(c: Coordinates): String {
 
 private fun shareSummary(project: Project): String {
     val reported = project.progress.reported
-    val lines = listOf(
+    return listOf(
         "${project.title} · ${project.place.full}",
         project.status.label + (reported?.let { " · ${it.percent}% physical progress reported ${it.reportedOn.format()}" } ?: ""),
         listOfNotNull(project.contract.amount?.let { "${formatPesos(it)} approved" }, project.implementingAgency?.name).joinToString(" · "),
         if (project.sample) "Sample record on The Eagle's Watch, not a real project." else "Seen on The Eagle's Watch.",
-    )
-    return lines.filter { it.isNotBlank() }.joinToString("\n")
+    ).filter { it.isNotBlank() }.joinToString("\n")
 }
 
 /**
- * Everything on file about one project, in the order a sceptical reader asks for it: what and where,
- * the contract, the location, progress with its sources, the dated timeline, the evidence, who is
- * responsible, where the data came from, and how to correct it.
+ * Everything on file about one project, in the order a sceptical reader asks for it: what and where, how far
+ * along, the contract, the location, the dated timeline, the evidence, who is responsible, where the data
+ * came from, and how to correct it.
  */
 @Composable
 fun ProjectScreen(
@@ -104,275 +113,202 @@ fun ProjectScreen(
     val today = remember { Day.today() }
     val watching = citizen.isWatching(project.id)
 
-    Column(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches()) {
+    Column(Modifier.fillMaxSize().background(EagleColors.Canvas).consumeTouches()) {
         PageBar(
             onBack = onBack,
+            onDark = true,
             actions = {
-                IconButton(Glyph.Share, "Share this record", onClick = { shareText(project.title, shareSummary(project)) }, iconSize = 20.dp)
-                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, iconSize = 20.dp, label = "Report")
+                IconButton(Glyph.Share, "Share this record", onClick = { shareText(project.title, shareSummary(project)) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
+                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
                 IconButton(
                     glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
                     description = if (watching) "Stop watching this project" else "Watch this project",
                     onClick = { citizen.toggleWatch(project.id) },
-                    tint = if (watching) EagleColors.Blue else EagleColors.Ink,
+                    tint = EagleColors.OnNavy,
                     iconSize = 20.dp,
                     toggled = watching,
                     label = if (watching) "Watching" else "Watch",
+                    filled = if (watching) EagleColors.Blue else Color.White.copy(alpha = 0.12f),
                 )
+                Spacer(Modifier.width(4.dp))
             },
         )
-        Column(
-            Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.navigationBars),
-        ) {
-            ContentColumn(max = if (layout.wide) 1080.dp else EagleMetrics.ContentMax) {
+        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).windowInsetsPadding(WindowInsets.navigationBars)) {
+            Hero(project, today)
+            ContentColumn(max = if (layout.wide) 1120.dp else EagleMetrics.ContentMax) {
+                val gap = Arrangement.spacedBy(EagleMetrics.CardGap)
                 if (layout.wide) {
-                    Row(Modifier.padding(horizontal = layout.gutter)) {
-                        Column(Modifier.weight(1.45f)) {
-                            Header(project)
-                            ProgressSection(project, today, onReport)
-                            TimelineSection(project, today)
-                            EvidenceSection(project)
-                            PartiesSection(project)
-                            ProvenanceSection(project)
-                            ReportSection(project, onReport)
+                    Row(Modifier.padding(horizontal = layout.gutter, vertical = 16.dp), horizontalArrangement = gap) {
+                        Column(Modifier.weight(1.4f), verticalArrangement = gap) {
+                            ProgressCard(project, today, onReport)
+                            TimelineCard(project, today)
+                            EvidenceCard(project)
+                            PartiesCard(project)
                         }
-                        Spacer(Modifier.width(40.dp))
-                        Column(Modifier.weight(1f)) {
-                            Spacer(Modifier.height(12.dp))
-                            ContractSection(project)
-                            LocationSection(project)
+                        Column(Modifier.weight(1f), verticalArrangement = gap) {
+                            ContractCard(project)
+                            LocationCard(project)
+                            ProvenanceCard(project)
+                            CorrectionsCard(onReport)
                         }
                     }
                 } else {
-                    Column(Modifier.padding(horizontal = layout.gutter)) {
-                        Header(project)
-                        ContractSection(project)
-                        LocationSection(project)
-                        ProgressSection(project, today, onReport)
-                        TimelineSection(project, today)
-                        EvidenceSection(project)
-                        PartiesSection(project)
-                        ProvenanceSection(project)
-                        ReportSection(project, onReport)
+                    Column(Modifier.padding(horizontal = layout.gutter, vertical = 16.dp), verticalArrangement = gap) {
+                        ProgressCard(project, today, onReport)
+                        ContractCard(project)
+                        LocationCard(project)
+                        TimelineCard(project, today)
+                        EvidenceCard(project)
+                        PartiesCard(project)
+                        ProvenanceCard(project)
+                        CorrectionsCard(onReport)
                     }
                 }
-                Spacer(Modifier.height(32.dp))
+            }
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+/** The navy band: status, title, place, and the three figures that matter most. */
+@Composable
+private fun Hero(project: Project, today: Day) {
+    val layout = LocalLayout.current
+    val reported = project.progress.reported
+    val work = reported?.let { it.percent / 100f }
+    val elapsed = project.timeElapsed(today)
+    val signal = scheduleSignal(project, today)
+    val s = project.schedule
+    val (thirdValue, thirdLabel) = when {
+        project.status == Status.Completed -> (s.actualEnd?.monthYear() ?: "—") to "Completed"
+        project.status == Status.Planned -> (s.start?.monthYear() ?: "—") to "Planned start"
+        else -> (elapsed?.let { percent(it) } ?: "—") to "Time used"
+    }
+    Box(Modifier.fillMaxWidth().background(EagleColors.Navy)) {
+        ContentColumn(max = if (layout.wide) 1120.dp else EagleMetrics.ContentMax) {
+            Column(Modifier.padding(horizontal = layout.gutter).padding(top = 4.dp, bottom = 22.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StatusTag(project.status)
+                    if (project.sample) SampleTag(onDark = true)
+                }
+                Spacer(Modifier.height(12.dp))
+                EText(project.title, display = true, size = 26.sp, lineHeight = 31.sp, color = EagleColors.OnNavy, heading = true)
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Glyph.Pin, tint = EagleColors.OnNavyMuted, size = 15.dp, weight = 2f)
+                    Spacer(Modifier.width(6.dp))
+                    EText(project.place.full, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNavyMuted)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(project.category.glyph, tint = EagleColors.OnNavyMuted, size = 15.dp, weight = 2f)
+                    Spacer(Modifier.width(6.dp))
+                    EText("${project.category.label} · ${project.level.label} project", size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNavyMuted)
+                }
+                Spacer(Modifier.height(18.dp))
+                Column(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(EagleMetrics.RadiusCard)).background(EagleColors.NavyRaised).padding(16.dp),
+                ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Stat(
+                            project.contract.amount?.let { compactPesos(it) } ?: "—",
+                            if (project.status == Status.Planned) "Proposed" else "Contract",
+                            Modifier.weight(1.1f),
+                            valueColor = EagleColors.OnNavy,
+                            labelColor = EagleColors.OnNavyMuted,
+                            size = 22.sp,
+                        )
+                        Stat(work?.let { percent(it) } ?: "—", "Work done", Modifier.weight(1f), valueColor = EagleColors.OnNavy, labelColor = EagleColors.OnNavyMuted, size = 22.sp)
+                        Stat(thirdValue, thirdLabel, Modifier.weight(1f), valueColor = EagleColors.OnNavy, labelColor = EagleColors.OnNavyMuted, size = 22.sp)
+                    }
+                    if (project.status != Status.Planned) {
+                        Spacer(Modifier.height(12.dp))
+                        WorkTrack(
+                            work = work,
+                            color = project.status.fill,
+                            time = if (project.status.active) elapsed else null,
+                            track = Color.White.copy(alpha = 0.14f),
+                            marker = EagleColors.OnNavy,
+                        )
+                    }
+                    if (signal != null) {
+                        Spacer(Modifier.height(12.dp))
+                        Tag(signal.text, color = signal.tone.color, background = signal.tone.soft, glyph = signal.glyph)
+                    }
+                }
             }
         }
     }
 }
 
+/** A labelled figure inside a card, with its source badge on the right. */
 @Composable
-private fun Section(title: String, content: @Composable ColumnScope.() -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(top = 20.dp)) {
-        Hairline()
-        Spacer(Modifier.height(12.dp))
-        SectionLabel(title)
-        Spacer(Modifier.height(10.dp))
+private fun Figure(label: String, value: String, attribution: Attribution, muted: Boolean = false, content: @Composable () -> Unit = {}) {
+    Column(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                EText(label, size = EagleType.Label, lineHeight = 18.sp, color = EagleColors.Muted)
+                EText(value, display = true, size = 22.sp, lineHeight = 28.sp, weight = FontWeight.SemiBold, color = if (muted) EagleColors.Muted else EagleColors.Ink, tabular = true)
+            }
+            SourceBadge(label, attribution)
+        }
         content()
     }
 }
 
 @Composable
-private fun SubLabel(text: String) {
-    EText(text, size = EagleType.Label, weight = FontWeight.SemiBold, color = EagleColors.Ink, modifier = Modifier.padding(bottom = 6.dp), heading = true)
-}
-
-@Composable
-private fun Header(project: Project) {
-    val reported = project.progress.reported
-    Column(Modifier.fillMaxWidth().padding(top = 12.dp)) {
-        if (project.sample) {
-            Notice(
-                text = "Fictional project used to design and test the app. It is not a real government record.",
-                tone = NoticeTone.Sample,
-                title = "Sample record",
-            )
-            Spacer(Modifier.height(14.dp))
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StatusTag(project.status, detail = reported?.let { "${it.percent}%" })
-            VerificationTag(recordVerification(project))
-        }
-        Spacer(Modifier.height(10.dp))
-        EText(project.title, size = 22.sp, lineHeight = 28.sp, weight = FontWeight.SemiBold, heading = true)
-        Spacer(Modifier.height(6.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(project.category.glyph, tint = EagleColors.Body, size = 16.dp)
-            Spacer(Modifier.width(6.dp))
-            EText("${project.category.label} · ${project.level.label} project", size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Glyph.Pin, tint = EagleColors.Body, size = 16.dp)
-            Spacer(Modifier.width(6.dp))
-            EText(project.place.full, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
-        }
-        Spacer(Modifier.height(10.dp))
-        EText(project.description, size = EagleType.Body, lineHeight = 22.sp, color = EagleColors.Ink)
-        Spacer(Modifier.height(4.dp))
-        ProvenanceLine(project.descriptionAttribution)
-    }
-}
-
-@Composable
-private fun ContractSection(project: Project) {
-    val c = project.contract
-    val s = project.schedule
-    Section("Contract and schedule") {
-        FactGrid(
-            listOf(
-                FactItem("Approved contract amount", c.amount?.let { formatPesos(it) }, note = c.reference?.let { "Ref. $it" }),
-                FactItem("Funding source", c.fundingSource),
-                FactItem("Implementing agency", project.implementingAgency?.name),
-                FactItem("Contractor", project.contractor?.name, note = project.contractor?.detail),
-                FactItem("Contract start", s.start?.format()),
-                FactItem(
-                    label = "Target completion",
-                    value = s.targetEnd?.format(),
-                    note = s.revisedEnd?.let { "Revised to ${it.format()}" },
-                ),
-                FactItem(
-                    label = "Actual completion",
-                    value = s.actualEnd?.format() ?: if (project.status == Status.Completed) null else "Not yet completed",
-                    muted = s.actualEnd == null,
-                ),
-                FactItem("Proposing office", project.proposingOffice?.name ?: project.implementingAgency?.name),
-            ),
-        )
-        Spacer(Modifier.height(12.dp))
-        ProvenanceLine(c.attribution, prefix = "Contract")
-        Spacer(Modifier.height(4.dp))
-        ProvenanceLine(s.attribution, prefix = "Schedule")
-    }
-}
-
-@Composable
-private fun LocationSection(project: Project) {
-    val uriHandler = LocalUriHandler.current
-    val place = project.place
-    Section("Location") {
-        Row(verticalAlignment = Alignment.Top) {
-            Locator(place.coordinates, Modifier.width(84.dp))
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                EText(place.full, size = EagleType.Body, lineHeight = 21.sp, weight = FontWeight.SemiBold)
-                EText(place.region, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
-                Spacer(Modifier.height(6.dp))
-                val c = place.coordinates
-                if (c != null) {
-                    EText(formatCoordinates(c), size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Ink, tabular = true)
-                    EText(place.precision.label.replaceFirstChar { it.uppercase() }, size = EagleType.Caption, lineHeight = 16.sp, color = EagleColors.Muted)
-                    Spacer(Modifier.height(10.dp))
-                    Button("Open in maps", onClick = { uriHandler.openUri(mapUrl(c)) }, glyph = Glyph.External, compact = true)
-                } else {
-                    ProvenanceLine(Attribution(Verification.Unavailable, "No coordinates on file for this record"))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProgressSection(project: Project, today: Day, onReport: (ReportPreset?) -> Unit) {
+private fun ProgressCard(project: Project, today: Day, onReport: (ReportPreset?) -> Unit) {
     val reported = project.progress.reported
     val independent = project.progress.independent
     val financial = project.progress.financial
     val amount = project.contract.amount
     val elapsed = project.timeElapsed(today)
     val active = project.status.active
-    Section("Progress") {
+    Card {
+        CardHeader("Progress", subtitle = "Status, physical work and money are reported separately")
+        Spacer(Modifier.height(14.dp))
         if (reported != null) {
-            MeterRow(
-                label = "Physical progress, as reported",
-                value = "${reported.percent}%",
-                fraction = reported.percent / 100f,
-                color = project.status.tone.color,
-                marker = if (active) elapsed else null,
-                attribution = reported.attribution,
-                note = if (active && elapsed != null) "The tick marks ${percent(elapsed)} of contract time used as of ${today.format()}." else null,
-            )
-        } else {
-            MeterRow(
-                label = "Physical progress, as reported",
-                value = "Not on file",
-                fraction = null,
-                attribution = Attribution(Verification.Unavailable, "No progress report on file"),
-            )
-        }
-        Spacer(Modifier.height(16.dp))
-        if (independent != null) {
-            MeterRow(
-                label = "Physical progress, independent check",
-                value = "${independent.percent}%",
-                fraction = independent.percent / 100f,
-                color = independent.attribution.verification.tone.color,
-                attribution = independent.attribution,
-            )
-        } else {
-            Column(Modifier.fillMaxWidth()) {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    EText("Physical progress, independent check", modifier = Modifier.weight(1f), size = EagleType.Secondary, color = EagleColors.Body)
-                    EText("None on file", size = EagleType.Secondary, weight = FontWeight.SemiBold, color = EagleColors.Muted)
+            Figure("Physical progress, as reported", "${reported.percent}%", reported.attribution) {
+                WorkTrack(reported.percent / 100f, color = project.status.fill, time = if (active) elapsed else null)
+                if (active && elapsed != null) {
+                    EText("The tick marks ${percent(elapsed)} of contract time used, as of ${today.format()}.", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.Muted)
                 }
+            }
+        } else {
+            Figure("Physical progress, as reported", "Not on file", Attribution(Verification.Unavailable, "No progress report on file"), muted = true)
+        }
+        Spacer(Modifier.height(14.dp))
+        Hairline()
+        Spacer(Modifier.height(14.dp))
+        if (independent != null) {
+            Figure("Independent check", "${independent.percent}%", independent.attribution) {
+                WorkTrack(independent.percent / 100f, color = EagleColors.FillGreen)
+            }
+        } else {
+            Figure("Independent check", "None yet", Attribution(Verification.Unavailable, "No site visit, audit finding or citizen report on file"), muted = true) {
                 Spacer(Modifier.height(4.dp))
-                Meter(null)
-                Spacer(Modifier.height(2.dp))
-                EText(
-                    text = "No site visit, audit finding or citizen report has checked the reported figure.",
-                    size = EagleType.Caption,
-                    lineHeight = 16.sp,
-                    color = EagleColors.Muted,
-                )
-                Spacer(Modifier.height(4.dp))
-                Button("Report what you see at the site", onClick = { onReport(null) }, style = ButtonStyle.Quiet, compact = true, glyph = Glyph.Flag)
+                EText("Nobody has checked the reported figure against the site.", size = EagleType.Label, lineHeight = 19.sp, color = EagleColors.Body)
+                Spacer(Modifier.height(10.dp))
+                Button("Report what you see at the site", onClick = { onReport(null) }, glyph = Glyph.Flag, compact = true)
             }
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(14.dp))
+        Hairline()
+        Spacer(Modifier.height(14.dp))
         when {
             financial != null && amount != null && amount > 0 -> {
                 val ratio = financial.disbursed.toFloat() / amount
-                MeterRow(
-                    label = "Funds disbursed",
-                    value = "${compactPesos(financial.disbursed)} of ${compactPesos(amount)} · ${percent(ratio)}",
-                    fraction = ratio,
-                    color = EagleColors.Ink,
-                    attribution = financial.attribution,
-                )
+                Figure("Funds disbursed", "${compactPesos(financial.disbursed)} · ${percent(ratio)}", financial.attribution) {
+                    Meter(ratio, color = EagleColors.Ink)
+                    EText("of the ${formatPesos(amount)} contract, as of ${financial.asOf.format()}", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.Muted)
+                }
             }
-            financial != null -> MeterRow(
-                label = "Funds disbursed",
-                value = formatPesos(financial.disbursed),
-                fraction = null,
-                attribution = financial.attribution,
-            )
-            else -> MeterRow(
-                label = "Funds disbursed",
-                value = "Not on file",
-                fraction = null,
-                attribution = Attribution(Verification.Unavailable, "No disbursement report on file"),
-            )
+            financial != null -> Figure("Funds disbursed", formatPesos(financial.disbursed), financial.attribution)
+            else -> Figure("Funds disbursed", "Not on file", Attribution(Verification.Unavailable, "No disbursement report on file"), muted = true)
         }
-        val start = project.schedule.start
-        val end = project.schedule.currentEnd
-        if (active && elapsed != null && start != null && end != null) {
-            Spacer(Modifier.height(16.dp))
-            val total = start.daysUntil(end).coerceAtLeast(1L)
-            val used = start.daysUntil(today).coerceIn(0L, total)
-            MeterRow(
-                label = "Contract time used",
-                value = percent(elapsed),
-                fraction = elapsed,
-                color = EagleColors.LineStrong,
-                note = "${days(used)} of ${days(total)} as of ${today.format()}. Ends ${end.format()}" +
-                    (if (project.schedule.revisedEnd != null) " (revised)." else "."),
-            )
+        Spacer(Modifier.height(16.dp))
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(EagleMetrics.Radius)).background(EagleColors.Surface).padding(12.dp)) {
+            EText(progressReading(project, today), size = EagleType.Label, lineHeight = 19.sp, color = EagleColors.Body)
         }
-        Spacer(Modifier.height(12.dp))
-        EText(progressReading(project, today), size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
     }
 }
 
@@ -394,16 +330,77 @@ private fun progressReading(project: Project, today: Day): String {
                 "Reported as completed."
             }
         }
-        Status.Planned -> "Works have not started. The contract amount is a proposal until an award is on file."
-        Status.Suspended -> "Works are suspended, so the reported figure will not move until they resume. The gap against contract time will widen while the suspension lasts."
+        Status.Planned -> "Works have not started. The amount is a proposal until an award is on file."
+        Status.Suspended -> "Works are suspended, so the reported figure will not move until they resume."
         else -> {
-            val gap = scheduleGap(project, today)
-            val points = gap?.let { (it * 100).toInt() }
+            val points = scheduleGap(project, today)?.let { (it * 100).toInt() }
             when {
                 points == null -> "Reported progress cannot be compared with the schedule because dates are missing."
                 points > 10 -> "Reported work is $points points behind the share of contract time used. This compares the agency's own figure with the calendar; it is not an independent finding."
-                points < -10 -> "Reported work is ${-points} points ahead of the share of contract time used, according to the agency's own figure."
-                else -> "Reported work is keeping pace with the share of contract time used, according to the agency's own figure."
+                points < -10 -> "Reported work is ${-points} points ahead of the share of contract time used, by the agency's own figure."
+                else -> "Reported work is keeping pace with the contract schedule, by the agency's own figure."
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContractCard(project: Project) {
+    val c = project.contract
+    val s = project.schedule
+    Card {
+        CardHeader("Contract & schedule", trailing = { SourceBadge("Contract", c.attribution) })
+        Spacer(Modifier.height(4.dp))
+        KeyValueRow("Approved amount", c.amount?.let { formatPesos(it) }, note = c.reference?.let { "Ref. $it" })
+        Hairline()
+        KeyValueRow("Funding source", c.fundingSource)
+        Hairline()
+        KeyValueRow("Implementing agency", project.implementingAgency?.name)
+        Hairline()
+        KeyValueRow("Contractor", project.contractor?.name, note = project.contractor?.detail)
+        Hairline()
+        KeyValueRow("Start", s.start?.format())
+        Hairline()
+        KeyValueRow("Target completion", s.targetEnd?.format(), note = s.revisedEnd?.let { "Revised to ${it.format()}" })
+        Hairline()
+        KeyValueRow(
+            "Completed",
+            s.actualEnd?.format() ?: if (project.status == Status.Completed) null else "Not yet",
+            muted = s.actualEnd == null,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            EText("Schedule source", modifier = Modifier.weight(1f), size = EagleType.Label, color = EagleColors.Muted)
+            SourceBadge("Schedule", s.attribution)
+        }
+    }
+}
+
+@Composable
+private fun LocationCard(project: Project) {
+    val uriHandler = LocalUriHandler.current
+    val place = project.place
+    val c = place.coordinates
+    Card {
+        CardHeader("Location")
+        Spacer(Modifier.height(12.dp))
+        Row(verticalAlignment = Alignment.Top) {
+            Box(Modifier.clip(RoundedCornerShape(EagleMetrics.Radius)).background(EagleColors.Surface).padding(10.dp)) {
+                Locator(c, Modifier.width(76.dp))
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                EText(place.full, size = EagleType.Body, lineHeight = 21.sp, weight = FontWeight.SemiBold)
+                EText(place.region, size = EagleType.Label, lineHeight = 18.sp, color = EagleColors.Muted)
+                Spacer(Modifier.height(8.dp))
+                if (c != null) {
+                    EText(formatCoordinates(c), size = EagleType.Label, lineHeight = 18.sp, color = EagleColors.Body, tabular = true)
+                    EText(place.precision.label.replaceFirstChar { it.uppercase() }, size = EagleType.Caption, lineHeight = 16.sp, color = EagleColors.Muted)
+                    Spacer(Modifier.height(10.dp))
+                    Button("Open in maps", onClick = { uriHandler.openUri(mapUrl(c)) }, glyph = Glyph.Map, compact = true)
+                } else {
+                    Tag("No coordinates on file", glyph = Glyph.CircleDashed, color = EagleColors.Muted)
+                }
             }
         }
     }
@@ -414,7 +411,7 @@ private class TimelineEntry(
     val title: String,
     val body: String?,
     val percent: Int?,
-    val attribution: Attribution?,
+    val attribution: Attribution,
     val upcoming: Boolean,
 )
 
@@ -431,82 +428,74 @@ private fun timelineEntries(project: Project, today: Day): List<TimelineEntry> {
 }
 
 @Composable
-private fun TimelineSection(project: Project, today: Day) {
+private fun TimelineCard(project: Project, today: Day) {
     val entries = remember(project, today) { timelineEntries(project, today) }
     var showAll by remember { mutableStateOf(false) }
     val shown = if (showAll || entries.size <= 5) entries else entries.take(5)
-    Section("Timeline") {
-        shown.forEachIndexed { index, entry ->
-            TimelineRow(entry)
-            if (index < shown.lastIndex) Hairline()
-        }
+    Card {
+        CardHeader("Timeline", subtitle = "${entries.size} dated entries, newest first")
+        Spacer(Modifier.height(14.dp))
+        shown.forEachIndexed { index, entry -> TimelineRow(entry, last = index == shown.lastIndex) }
         if (entries.size > 5) {
-            Spacer(Modifier.height(10.dp))
-            Button(
-                label = if (showAll) "Show fewer" else "Show all ${entries.size} entries",
-                onClick = { showAll = !showAll },
-                compact = true,
-            )
+            Spacer(Modifier.height(4.dp))
+            Button(if (showAll) "Show fewer" else "Show all ${entries.size} entries", onClick = { showAll = !showAll }, compact = true, fillWidth = true)
         }
     }
 }
 
 @Composable
-private fun TimelineRow(entry: TimelineEntry) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.Top) {
-        Column(Modifier.width(92.dp)) {
-            EText(
-                text = entry.date.format(),
-                size = EagleType.Label,
-                lineHeight = 18.sp,
-                weight = FontWeight.SemiBold,
-                color = if (entry.upcoming) EagleColors.Muted else EagleColors.Ink,
-                tabular = true,
+private fun TimelineRow(entry: TimelineEntry, last: Boolean) {
+    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+        Column(Modifier.width(20.dp).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(Modifier.height(4.dp))
+            val dot = Modifier.size(12.dp).clip(CircleShape)
+            Box(
+                if (entry.upcoming) dot.border(2.dp, EagleColors.LineStrong, CircleShape)
+                else dot.background(if (entry.body == null) EagleColors.Ink else EagleColors.Blue),
             )
-            if (entry.upcoming) EText("upcoming", size = EagleType.Caption, color = EagleColors.Muted)
-            if (entry.percent != null) EText("${entry.percent}% work", size = EagleType.Caption, lineHeight = 16.sp, color = EagleColors.Muted, tabular = true)
+            if (!last) Box(Modifier.width(2.dp).weight(1f).background(EagleColors.Line))
         }
         Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            EText(
-                text = entry.title,
-                size = EagleType.Body,
-                lineHeight = 20.sp,
-                weight = FontWeight.SemiBold,
-                color = if (entry.upcoming) EagleColors.Muted else EagleColors.Ink,
-            )
-            if (entry.body != null) {
-                Spacer(Modifier.height(2.dp))
-                EText(entry.body, size = EagleType.Secondary, lineHeight = 19.sp, color = EagleColors.Body)
+        Column(Modifier.weight(1f).padding(bottom = if (last) 4.dp else 18.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                EText(entry.date.format(), size = EagleType.Caption, weight = FontWeight.SemiBold, color = EagleColors.Muted, tabular = true)
+                if (entry.upcoming) {
+                    Spacer(Modifier.width(6.dp))
+                    Tag("Upcoming")
+                }
+                if (entry.percent != null) {
+                    Spacer(Modifier.width(6.dp))
+                    Tag("${entry.percent}% work", color = EagleColors.Blue, background = EagleColors.BlueSoft)
+                }
             }
-            if (entry.attribution != null) {
-                Spacer(Modifier.height(4.dp))
-                ProvenanceLine(entry.attribution)
-            }
+            Spacer(Modifier.height(2.dp))
+            EText(entry.title, size = EagleType.Body, lineHeight = 21.sp, weight = FontWeight.SemiBold, color = if (entry.upcoming) EagleColors.Muted else EagleColors.Ink)
+            if (entry.body != null) EText(entry.body, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
+            SourceBadge(entry.title, entry.attribution)
         }
     }
 }
 
 @Composable
-private fun EvidenceSection(project: Project) {
+private fun EvidenceCard(project: Project) {
     val uriHandler = LocalUriHandler.current
-    Section("Evidence") {
-        SubLabel("Site photographs")
+    Card {
+        CardHeader("Evidence", subtitle = "Site photos and official documents")
+        Spacer(Modifier.height(12.dp))
         if (project.photos.isEmpty()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Glyph.Photo, tint = EagleColors.Muted, size = 18.dp)
-                Spacer(Modifier.width(8.dp))
-                EText("No verified site photographs on file.", size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(EagleMetrics.Radius)).background(EagleColors.Surface).padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconTile(Glyph.Photo, tint = EagleColors.Muted, background = EagleColors.Page)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    EText("No site photos on file", size = EagleType.Secondary, weight = FontWeight.SemiBold)
+                    EText("Dated, captioned photos appear here once an agency or a checked citizen report supplies them. Nothing is shown in their place.", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.Muted)
+                }
             }
-            Spacer(Modifier.height(4.dp))
-            EText(
-                text = "Photographs appear here with their date, caption and source once an agency posting or a checked citizen report supplies them. Nothing is shown in their place.",
-                size = EagleType.Caption,
-                lineHeight = 16.sp,
-                color = EagleColors.Muted,
-            )
         } else {
-            project.photos.forEachIndexed { index, photo ->
+            project.photos.forEach { photo ->
                 LinkRow(
                     title = photo.caption,
                     detail = listOfNotNull(photo.takenOn?.format() ?: "Date not on file", photo.attribution.verification.label, photo.attribution.source).joinToString(" · "),
@@ -514,13 +503,11 @@ private fun EvidenceSection(project: Project) {
                     onClick = { uriHandler.openUri(photo.url) },
                     external = true,
                 )
-                if (index < project.photos.lastIndex) Hairline()
             }
         }
-        Spacer(Modifier.height(16.dp))
-        SubLabel("Official documents")
+        Spacer(Modifier.height(10.dp))
         if (project.documents.isEmpty()) {
-            EText("No documents on file.", size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
+            EText("No documents on file.", size = EagleType.Secondary, color = EagleColors.Muted)
         } else {
             project.documents.forEachIndexed { index, doc ->
                 val url = doc.url
@@ -535,90 +522,72 @@ private fun EvidenceSection(project: Project) {
                 if (index < project.documents.lastIndex) Hairline()
             }
         }
-        Spacer(Modifier.height(6.dp))
-        EText(
-            text = "Links open the document on the source's own site. Where no link is on file, the record names the document so it can be requested from the agency.",
-            size = EagleType.Caption,
-            lineHeight = 16.sp,
-            color = EagleColors.Muted,
-        )
     }
 }
 
 @Composable
-private fun PartiesSection(project: Project) {
-    Section("Responsible parties") {
+private fun PartiesCard(project: Project) {
+    val attribution = project.parties.firstOrNull()?.attribution
+    Card {
+        CardHeader("Responsible parties", trailing = if (attribution != null) ({ SourceBadge("Responsible parties", attribution) }) else null)
+        Spacer(Modifier.height(8.dp))
         listOf(PartyRole.Implementing, PartyRole.Proposing, PartyRole.Contractor).forEach { role ->
             val party = project.parties.firstOrNull { it.role == role }
             if (party != null || role != PartyRole.Proposing) {
-                PartyRow(role.label, party?.name, party?.detail)
+                PartyRow(
+                    leading = { IconTile(if (role == PartyRole.Contractor) Glyph.HardHat else Glyph.Agency) },
+                    title = party?.name ?: "Not on file",
+                    subtitle = listOfNotNull(role.label, party?.detail).joinToString(" · "),
+                    missing = party == null,
+                )
             }
         }
-        if (project.officials.isNotEmpty()) {
-            Spacer(Modifier.height(4.dp))
-            SubLabel("Officials named")
-            project.officials.forEach { PartyRow(null, it.name, it.detail) }
+        project.officials.forEach { official ->
+            PartyRow(leading = { Initials(official.name) }, title = official.name, subtitle = official.detail ?: "Official")
         }
-        val attribution = project.parties.firstOrNull()?.attribution
-        if (attribution != null) ProvenanceLine(attribution)
-        Spacer(Modifier.height(4.dp))
-        EText(
-            text = "Listed as the source names them. Being named here is not a finding about any problem with the project.",
-            size = EagleType.Caption,
-            lineHeight = 16.sp,
-            color = EagleColors.Muted,
-        )
+        Spacer(Modifier.height(6.dp))
+        EText("Listed as the source names them. Being named is not a finding about any problem with the project.", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.Muted)
     }
 }
 
 @Composable
-private fun PartyRow(label: String?, name: String?, detail: String?) {
-    Column(Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
-        if (label != null) EText(label, size = EagleType.Caption, lineHeight = 16.sp, color = EagleColors.Muted)
-        EText(
-            text = name ?: "Not on file",
-            size = EagleType.Body,
-            lineHeight = 20.sp,
-            weight = if (name != null) FontWeight.SemiBold else null,
-            color = if (name != null) EagleColors.Ink else EagleColors.Muted,
-        )
-        if (detail != null) EText(detail, size = EagleType.Secondary, lineHeight = 19.sp, color = EagleColors.Body)
+private fun PartyRow(leading: @Composable () -> Unit, title: String, subtitle: String, missing: Boolean = false) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        leading()
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            EText(title, size = EagleType.Body, lineHeight = 21.sp, weight = FontWeight.SemiBold, color = if (missing) EagleColors.Muted else EagleColors.Ink)
+            EText(subtitle, size = EagleType.Label, lineHeight = 18.sp, color = EagleColors.Muted)
+        }
     }
 }
 
 @Composable
-private fun ProvenanceSection(project: Project) {
+private fun ProvenanceCard(project: Project) {
     val uriHandler = LocalUriHandler.current
-    Section("Data provenance") {
-        FactGrid(
-            listOf(
-                FactItem("Last checked against sources", project.lastChecked?.format() ?: "Not yet checked", muted = project.lastChecked == null),
-                FactItem("Record last updated", project.recordUpdated?.format()),
-                FactItem("Record ID", project.id),
-                FactItem("Record type", if (project.sample) "Sample fixture" else "Live record", muted = project.sample),
-            ),
-        )
-        Spacer(Modifier.height(16.dp))
-        SubLabel("Sources")
-        project.sources.forEachIndexed { index, source ->
+    Card {
+        CardHeader("Sources & history")
+        Spacer(Modifier.height(4.dp))
+        KeyValueRow("Last checked", project.lastChecked?.format() ?: "Not yet checked", muted = project.lastChecked == null)
+        Hairline()
+        KeyValueRow("Record updated", project.recordUpdated?.format())
+        Hairline()
+        KeyValueRow("Record type", if (project.sample) "Sample fixture" else "Live record", muted = project.sample)
+        Hairline()
+        KeyValueRow("Record ID", project.id)
+        Spacer(Modifier.height(8.dp))
+        project.sources.forEach { source ->
             val url = source.url
-            LinkRow(
-                title = source.name,
-                glyph = Glyph.Document,
-                onClick = if (url != null) ({ uriHandler.openUri(url) }) else null,
-                external = true,
-                unavailable = "No link on file",
-            )
-            if (index < project.sources.lastIndex) Hairline()
+            LinkRow(title = source.name, glyph = Glyph.Document, onClick = if (url != null) ({ uriHandler.openUri(url) }) else null, external = true, unavailable = "No link on file")
         }
-        Spacer(Modifier.height(16.dp))
-        SubLabel("Revision history")
+        Spacer(Modifier.height(10.dp))
+        EText("Revision history", size = EagleType.Secondary, weight = FontWeight.SemiBold)
+        Spacer(Modifier.height(4.dp))
         project.revisions.sortedByDescending { it.date.epochDay }.forEach { revision ->
             Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.Top) {
-                EText(revision.date.format(), modifier = Modifier.width(92.dp), size = EagleType.Label, lineHeight = 18.sp, weight = FontWeight.SemiBold, tabular = true)
-                Spacer(Modifier.width(12.dp))
+                EText(revision.date.format(), modifier = Modifier.width(96.dp), size = EagleType.Caption, lineHeight = 18.sp, weight = FontWeight.SemiBold, color = EagleColors.Muted, tabular = true)
                 Column(Modifier.weight(1f)) {
-                    EText(revision.summary, size = EagleType.Secondary, lineHeight = 19.sp, color = EagleColors.Ink)
+                    EText(revision.summary, size = EagleType.Label, lineHeight = 18.sp, color = EagleColors.Ink)
                     EText(revision.by, size = EagleType.Caption, lineHeight = 16.sp, color = EagleColors.Muted)
                 }
             }
@@ -627,27 +596,23 @@ private fun ProvenanceSection(project: Project) {
 }
 
 @Composable
-private fun ReportSection(project: Project, onReport: (ReportPreset?) -> Unit) {
-    Section("Corrections and reports") {
+private fun CorrectionsCard(onReport: (ReportPreset?) -> Unit) {
+    Card {
+        CardHeader("Something wrong?")
+        Spacer(Modifier.height(6.dp))
         LinkRow(
-            title = "Report incorrect or outdated information",
+            title = "Correct this record",
             detail = "A wrong figure, a missing document, a status that has changed",
             glyph = Glyph.Alert,
             onClick = { onReport(ReportPreset.IncorrectInformation) },
         )
-        Hairline()
         LinkRow(
             title = "Report a problem with this project",
             detail = "Work stopped, poor quality, a safety hazard, or a concern about the people in charge",
             glyph = Glyph.Flag,
             onClick = { onReport(null) },
         )
-        Spacer(Modifier.height(8.dp))
-        EText(
-            text = "Reports are anonymous unless you choose to share contact details. In this preview they stay on your device.",
-            size = EagleType.Caption,
-            lineHeight = 16.sp,
-            color = EagleColors.Muted,
-        )
+        Spacer(Modifier.height(4.dp))
+        EText("Anonymous unless you share contact details. In this preview, reports stay on your device.", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.Muted)
     }
 }

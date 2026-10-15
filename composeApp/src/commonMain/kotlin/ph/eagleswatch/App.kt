@@ -1,6 +1,20 @@
 package ph.eagleswatch
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -47,6 +61,9 @@ import ph.eagleswatch.ui.Glyph
 import ph.eagleswatch.ui.Layout
 import ph.eagleswatch.ui.LocalFonts
 import ph.eagleswatch.ui.LocalLayout
+import ph.eagleswatch.ui.LocalSourceSheet
+import ph.eagleswatch.ui.SourceInfo
+import ph.eagleswatch.ui.SourceSheetContent
 import ph.eagleswatch.ui.consumeTouches
 import ph.eagleswatch.ui.rememberEagleFonts
 
@@ -66,7 +83,7 @@ private sealed interface Route {
 fun App() {
     val fonts = rememberEagleFonts()
     CompositionLocalProvider(LocalFonts provides fonts) {
-        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Page)) {
+        BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Canvas)) {
             val wide = maxWidth >= Layout.WideBreakpoint
             val layout = remember(wide) { Layout(wide = wide, gutter = if (wide) EagleMetrics.WideGutter else EagleMetrics.PhoneGutter) }
 
@@ -82,7 +99,13 @@ fun App() {
             PlatformBackHandler(enabled = stack.isNotEmpty(), onBack = back)
             val sample = (store.state as? LoadState.Ready)?.dataset?.sample == true
 
-            CompositionLocalProvider(LocalLayout provides layout) {
+            // The source sheet: where a figure comes from, opened from any source badge.
+            var sheetOpen by remember { mutableStateOf(false) }
+            var sheetInfo by remember { mutableStateOf<SourceInfo?>(null) }
+            val openSource: (SourceInfo) -> Unit = remember { { info -> sheetInfo = info; sheetOpen = true } }
+            PlatformBackHandler(enabled = sheetOpen) { sheetOpen = false }
+
+            CompositionLocalProvider(LocalLayout provides layout, LocalSourceSheet provides openSource) {
                 Box(Modifier.fillMaxSize()) {
                     Column(Modifier.fillMaxSize()) {
                         if (wide) TopBar(current = destination, onSelect = { destination = it }, onReport = { report(null, null) }, sample = sample)
@@ -149,6 +172,36 @@ fun App() {
                             )
                         }
                     }
+
+                    AnimatedVisibility(visible = sheetOpen, enter = fadeIn(tween(160)), exit = fadeOut(tween(160))) {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(EagleColors.Scrim)
+                                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { sheetOpen = false },
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = sheetOpen,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        enter = slideInVertically(tween(220)) { it },
+                        exit = slideOutVertically(tween(180)) { it },
+                    ) {
+                        val info = sheetInfo
+                        if (info != null) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .widthIn(max = 640.dp)
+                                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                                    .background(EagleColors.Page)
+                                    .consumeTouches()
+                                    .windowInsetsPadding(WindowInsets.navigationBars),
+                            ) {
+                                SourceSheetContent(info, onClose = { sheetOpen = false })
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -158,7 +211,7 @@ fun App() {
 @Composable
 private fun MissingProject(onBack: () -> Unit) {
     val layout = LocalLayout.current
-    Column(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches()) {
+    Column(Modifier.fillMaxSize().background(EagleColors.Canvas).consumeTouches()) {
         PageBar(onBack = onBack, title = "Project")
         EmptyState(
             glyph = Glyph.Alert,

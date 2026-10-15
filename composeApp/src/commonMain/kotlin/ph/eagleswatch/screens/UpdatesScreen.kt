@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -29,20 +28,21 @@ import ph.eagleswatch.content.Update
 import ph.eagleswatch.data.LoadState
 import ph.eagleswatch.data.ProjectStore
 import ph.eagleswatch.state.CitizenState
+import ph.eagleswatch.ui.Card
 import ph.eagleswatch.ui.EText
 import ph.eagleswatch.ui.EagleColors
+import ph.eagleswatch.ui.EagleMetrics
 import ph.eagleswatch.ui.EagleType
 import ph.eagleswatch.ui.EmptyState
 import ph.eagleswatch.ui.ErrorState
 import ph.eagleswatch.ui.FilterChip
 import ph.eagleswatch.ui.Glyph
-import ph.eagleswatch.ui.Hairline
-import ph.eagleswatch.ui.Icon
+import ph.eagleswatch.ui.IconTile
 import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.SkeletonRows
+import ph.eagleswatch.ui.Tag
 import ph.eagleswatch.ui.VerificationTag
 import ph.eagleswatch.ui.glyph
-import ph.eagleswatch.ui.tappable
 
 /** Every dated entry on every record, newest first, each with who reported it. */
 @Composable
@@ -55,11 +55,13 @@ fun UpdatesScreen(store: ProjectStore, citizen: CitizenState, onOpen: (Project) 
         .flatMap { project -> project.updates.map { project to it } }
         .sortedByDescending { (_, update) -> update.date.epochDay }
 
-    Column(modifier.fillMaxSize().background(EagleColors.Page)) {
-        TabTitle("Updates", subtitle = "Dated entries from every record, newest first, with who reported each one")
-        Row(Modifier.padding(horizontal = layout.gutter), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            FilterChip("All projects", selected = !watchingOnly, onClick = { watchingOnly = false }, role = Role.RadioButton, count = store.projects.size)
-            FilterChip("Watching", selected = watchingOnly, onClick = { watchingOnly = true }, role = Role.RadioButton, count = citizen.watched.size)
+    Column(modifier.fillMaxSize().background(EagleColors.Canvas)) {
+        TabTitle("Updates", subtitle = "Dated entries from every record, with who reported each one")
+        ContentColumn {
+            Row(Modifier.padding(horizontal = layout.gutter), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FilterChip("All projects", selected = !watchingOnly, onClick = { watchingOnly = false }, role = Role.RadioButton)
+                FilterChip("Watching", selected = watchingOnly, onClick = { watchingOnly = true }, role = Role.RadioButton, count = citizen.watched.size)
+            }
         }
         Spacer(Modifier.height(4.dp))
         when (state) {
@@ -67,22 +69,26 @@ fun UpdatesScreen(store: ProjectStore, citizen: CitizenState, onOpen: (Project) 
             is LoadState.Failed -> ContentColumn {
                 ErrorState("The records could not be loaded", state.message, onRetry = store::retry, modifier = Modifier.padding(horizontal = layout.gutter))
             }
-            is LoadState.Ready -> ContentColumn(Modifier.weight(1f)) {
-                LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
-                    if (feed.isEmpty()) {
-                        item(key = "empty") {
-                            EmptyState(
-                                glyph = Glyph.Bell,
-                                title = if (watchingOnly) "No updates from watched projects" else "No updates yet",
-                                body = if (watchingOnly) "Tap the eye on a project to watch it. Its updates will show here." else "Updates appear as records gain dated entries.",
-                                modifier = Modifier.padding(horizontal = layout.gutter),
-                            )
+            is LoadState.Ready -> LazyColumn(
+                Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(EagleMetrics.CardGap),
+            ) {
+                if (feed.isEmpty()) {
+                    item(key = "empty") {
+                        ContentColumn {
+                            Card(Modifier.padding(horizontal = layout.gutter)) {
+                                EmptyState(
+                                    glyph = Glyph.Bell,
+                                    title = if (watchingOnly) "No updates from watched projects" else "No updates yet",
+                                    body = if (watchingOnly) "Tap the eye on a project to follow it. Its updates will show here." else "Updates appear as records gain dated entries.",
+                                )
+                            }
                         }
                     }
-                    items(feed, key = { (project, update) -> "${project.id}:${update.date.epochDay}:${update.title}" }) { (project, update) ->
-                        UpdateItem(project, update, onOpen = { onOpen(project) })
-                        Hairline()
-                    }
+                }
+                items(feed, key = { (project, update) -> "${project.id}:${update.date.epochDay}:${update.title}" }) { (project, update) ->
+                    ContentColumn { UpdateCard(project, update, onOpen = { onOpen(project) }, modifier = Modifier.padding(horizontal = layout.gutter)) }
                 }
             }
         }
@@ -90,38 +96,28 @@ fun UpdatesScreen(store: ProjectStore, citizen: CitizenState, onOpen: (Project) 
 }
 
 @Composable
-private fun UpdateItem(project: Project, update: Update, onOpen: () -> Unit) {
-    val layout = LocalLayout.current
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .tappable(onClick = onOpen, description = "Open ${project.title}")
-            .padding(horizontal = layout.gutter, vertical = 12.dp),
-    ) {
+private fun UpdateCard(project: Project, update: Update, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    Card(modifier, onClick = onOpen, description = "Open ${project.title}") {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            EText(update.date.format(), size = EagleType.Label, weight = FontWeight.SemiBold, tabular = true)
-            Spacer(Modifier.width(8.dp))
-            VerificationTag(update.attribution.verification)
-            Spacer(Modifier.weight(1f))
+            EText(update.date.format(), modifier = Modifier.weight(1f), size = EagleType.Label, weight = FontWeight.SemiBold, color = EagleColors.Muted, tabular = true)
             if (update.percent != null) {
-                EText("${update.percent}% work", size = EagleType.Caption, color = EagleColors.Muted, tabular = true)
+                Tag("${update.percent}% work", color = EagleColors.Blue, background = EagleColors.BlueSoft)
+                Spacer(Modifier.width(6.dp))
             }
+            VerificationTag(update.attribution.verification)
         }
-        Spacer(Modifier.height(6.dp))
-        EText(update.title, size = EagleType.Body, lineHeight = 20.sp, weight = FontWeight.SemiBold)
-        EText(update.body, size = EagleType.Secondary, lineHeight = 19.sp, color = EagleColors.Body, maxLines = 3, ellipsis = true)
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
+        EText(update.title, display = true, size = EagleType.Title, lineHeight = 22.sp, weight = FontWeight.SemiBold)
+        Spacer(Modifier.height(2.dp))
+        EText(update.body, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body, maxLines = 3, ellipsis = true)
+        Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(project.category.glyph, tint = EagleColors.Muted, size = 13.dp, weight = 2f)
-            Spacer(Modifier.width(5.dp))
-            EText(
-                text = "${project.title} · ${project.place.short}",
-                size = EagleType.Caption,
-                lineHeight = 16.sp,
-                color = EagleColors.Blue,
-                maxLines = 1,
-                ellipsis = true,
-            )
+            IconTile(project.category.glyph, size = 32.dp)
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                EText(project.title, size = EagleType.Label, weight = FontWeight.Medium, color = EagleColors.Ink, maxLines = 1, ellipsis = true)
+                EText(project.place.short, size = EagleType.Caption, color = EagleColors.Muted, maxLines = 1, ellipsis = true)
+            }
         }
     }
 }
