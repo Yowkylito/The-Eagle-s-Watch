@@ -7,6 +7,20 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.border
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
+import ph.eagleswatch.ui.ChromeState
+import ph.eagleswatch.ui.GlassStyles
+import ph.eagleswatch.ui.LocalBottomSpace
+import ph.eagleswatch.ui.LocalChrome
+import ph.eagleswatch.ui.LocalHaze
+import ph.eagleswatch.ui.TabBarHeight
+import ph.eagleswatch.ui.glassEdge
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.widthIn
@@ -105,8 +119,23 @@ fun App() {
             val openSource: (SourceInfo) -> Unit = remember { { info -> sheetInfo = info; sheetOpen = true } }
             PlatformBackHandler(enabled = sheetOpen) { sheetOpen = false }
 
-            CompositionLocalProvider(LocalLayout provides layout, LocalSourceSheet provides openSource) {
+            // Glass: every tab and page draws into one blur source; the tab bar, the status-bar strip and the
+            // source sheet read from it.
+            val haze = rememberHazeState()
+            val chrome = remember { ChromeState() }
+            val navBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            val showTabBar = !wide && stack.isEmpty() && !chrome.tabBarHidden
+            val bottomSpace = if (wide) 0.dp else TabBarHeight + 24.dp + navBottom
+
+            CompositionLocalProvider(
+                LocalLayout provides layout,
+                LocalSourceSheet provides openSource,
+                LocalHaze provides haze,
+                LocalChrome provides chrome,
+                LocalBottomSpace provides bottomSpace,
+            ) {
                 Box(Modifier.fillMaxSize()) {
+                  Box(Modifier.fillMaxSize().hazeSource(haze)) {
                     Column(Modifier.fillMaxSize()) {
                         if (wide) TopBar(current = destination, onSelect = { destination = it }, onReport = { report(null, null) }, sample = sample)
                         Crossfade(
@@ -133,7 +162,6 @@ fun App() {
                                 Destination.About -> AboutScreen(citizen = citizen, onReport = { report(null, null) })
                             }
                         }
-                        if (!wide) BottomNav(current = destination, onSelect = { destination = it })
                     }
 
                     // Pages slide in from the right as they open and back out as they close.
@@ -172,6 +200,22 @@ fun App() {
                             )
                         }
                     }
+                  }
+
+                    // Content scrolling under the status bar shows through frosted navy, so the light status
+                    // icons always have a dark backing.
+                    if (!wide && stack.isEmpty()) {
+                        Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).hazeEffect(haze, GlassStyles.Navy))
+                    }
+
+                    AnimatedVisibility(
+                        visible = showTabBar,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        enter = slideInVertically(tween(220)) { it } + fadeIn(tween(220)),
+                        exit = slideOutVertically(tween(180)) { it } + fadeOut(tween(180)),
+                    ) {
+                        BottomNav(current = destination, onSelect = { destination = it })
+                    }
 
                     AnimatedVisibility(visible = sheetOpen, enter = fadeIn(tween(160)), exit = fadeOut(tween(160))) {
                         Box(
@@ -193,8 +237,9 @@ fun App() {
                                 Modifier
                                     .fillMaxWidth()
                                     .widthIn(max = 640.dp)
-                                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                                    .background(EagleColors.Page)
+                                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                                    .hazeEffect(haze, GlassStyles.Sheet)
+                                    .border(1.dp, glassEdge(0.5f), RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                                     .consumeTouches()
                                     .windowInsetsPadding(WindowInsets.navigationBars),
                             ) {

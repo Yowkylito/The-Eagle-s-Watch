@@ -313,7 +313,7 @@ fun IconButton(
             .heightIn(min = EagleMetrics.Touch)
             .widthIn(min = EagleMetrics.Touch)
             .then(if (bordered) Modifier.border(1.dp, EagleColors.LineStrong, shape) else Modifier)
-            .then(if (filled != null) Modifier.clip(shape).background(filled) else Modifier)
+            .then(if (filled != null) Modifier.clip(shape).background(filled).border(1.dp, glassEdge(0.16f), shape) else Modifier)
             .tappable(
                 onClick = onClick,
                 shape = shape,
@@ -727,31 +727,32 @@ fun SearchField(
     val fonts = LocalFonts.current
     var focused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(EagleMetrics.Radius)
+    val text = if (onDark) EagleColors.OnNavy else EagleColors.Ink
+    val hint = if (onDark) EagleColors.OnNavyMuted else EagleColors.Muted
     Row(
         modifier
             .fillMaxWidth()
             .heightIn(min = EagleMetrics.Touch)
-            .clip(shape)
-            .background(if (onDark) EagleColors.Page else EagleColors.Surface)
-            .then(if (focused) Modifier.border(2.dp, EagleColors.Blue, shape) else Modifier)
+            .then(if (onDark) Modifier.glass(shape, fill = if (focused) 0.16f else 0.10f, edge = 0.2f) else Modifier.clip(shape).background(EagleColors.Surface))
+            .then(if (focused && !onDark) Modifier.border(2.dp, EagleColors.Blue, shape) else Modifier)
             .padding(start = 14.dp, end = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(Glyph.Search, tint = EagleColors.Muted, size = 18.dp)
+        Icon(Glyph.Search, tint = hint, size = 18.dp)
         Spacer(Modifier.width(10.dp))
         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-            if (query.isEmpty()) EText(placeholder, size = EagleType.Body, color = EagleColors.Muted, maxLines = 1, ellipsis = true)
+            if (query.isEmpty()) EText(placeholder, size = EagleType.Body, color = hint, maxLines = 1, ellipsis = true)
             BasicTextField(
                 value = query,
                 onValueChange = { onQuery(it.replace("\n", " ")) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                textStyle = TextStyle(fontFamily = fonts.sans, fontSize = EagleType.Body, color = EagleColors.Ink),
-                cursorBrush = SolidColor(EagleColors.Blue),
+                textStyle = TextStyle(fontFamily = fonts.sans, fontSize = EagleType.Body, color = text),
+                cursorBrush = SolidColor(if (onDark) EagleColors.OnNavy else EagleColors.Blue),
                 modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused }.semantics { contentDescription = description },
             )
         }
-        if (query.isNotEmpty()) IconButton(Glyph.Close, "Clear search", onClick = { onQuery("") }, tint = EagleColors.Muted, iconSize = 18.dp)
+        if (query.isNotEmpty()) IconButton(Glyph.Close, "Clear search", onClick = { onQuery("") }, tint = hint, iconSize = 18.dp)
     }
 }
 
@@ -859,7 +860,13 @@ fun FilterChip(
                 .height(36.dp)
                 .clip(shape)
                 .background(background)
-                .then(if (!dark && !selected) Modifier.border(1.dp, EagleColors.Line, shape) else Modifier)
+                .then(
+                    when {
+                        dark && !selected -> Modifier.border(1.dp, glassEdge(0.16f), shape)
+                        !dark && !selected -> Modifier.border(1.dp, EagleColors.Line, shape)
+                        else -> Modifier
+                    },
+                )
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

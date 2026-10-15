@@ -104,9 +104,9 @@ object EagleType {
 
 /** Spacing and shape tokens on a 4dp grid. */
 object EagleMetrics {
-    val RadiusCard: Dp = 16.dp
-    val Radius: Dp = 12.dp
-    val RadiusChip: Dp = 10.dp
+    val RadiusCard: Dp = 22.dp
+    val Radius: Dp = 14.dp
+    val RadiusChip: Dp = 12.dp
     val RadiusSmall: Dp = 6.dp
 
     /** Minimum size of anything tappable. */

@@ -64,7 +64,7 @@ async function shot(page, name) {
     await shot(page, 'phone-03-explore-more');
     await page.mouse.wheel(0, -5000);
     await sleep(600);
-    await page.mouse.click(320, 292); // More filters, beside the search box
+    await page.mouse.click(320, 323); // More filters, beside the search box
     await shot(page, 'phone-04-filters');
     await page.mouse.click(28, 28); // Close
     await sleep(800);
@@ -87,17 +87,17 @@ async function shot(page, name) {
     await sleep(600);
     await page.mouse.click(28, 28); // Back
     await sleep(800);
-    await page.mouse.click(135, 746); // Watchlist tab
+    await page.mouse.click(141, 736); // Watchlist tab
     await shot(page, 'phone-13-watchlist');
-    await page.mouse.click(225, 746); // Updates tab
+    await page.mouse.click(219, 736); // Updates tab
     await shot(page, 'phone-14-updates');
-    await page.mouse.click(315, 746); // About tab
+    await page.mouse.click(296, 736); // About tab
     await shot(page, 'phone-15-about');
     await page.mouse.wheel(0, 800);
     await shot(page, 'phone-16-about');
     await page.mouse.wheel(0, 800);
     await shot(page, 'phone-17-about');
-    await page.mouse.click(45, 746); // Explore tab
+    await page.mouse.click(63, 736); // Explore tab
     await sleep(600);
     await page.mouse.wheel(0, -5000);
     await sleep(400);

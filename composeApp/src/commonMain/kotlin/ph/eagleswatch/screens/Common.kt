@@ -31,6 +31,7 @@ import ph.eagleswatch.ui.EagleType
 import ph.eagleswatch.ui.Glyph
 import ph.eagleswatch.ui.IconButton
 import ph.eagleswatch.ui.LocalLayout
+import ph.eagleswatch.ui.aurora
 
 /**
  * The navy band at the top of a tab, with its title. Every screen starts on navy, so the status bar always
@@ -46,7 +47,7 @@ fun TabTitle(
     val layout = LocalLayout.current
     ContentColumn(
         modifier
-            .background(EagleColors.Navy)
+            .aurora()
             .then(if (layout.wide) Modifier else Modifier.windowInsetsPadding(WindowInsets.statusBars)),
         max = if (layout.wide) 1200.dp else EagleMetrics.ContentMax,
     ) {
@@ -79,13 +80,14 @@ fun PageBar(
     backGlyph: Glyph = Glyph.Back,
     backDescription: String = "Back",
     onDark: Boolean = true,
+    transparent: Boolean = false,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val content = EagleColors.OnNavy
     Row(
         modifier
             .fillMaxWidth()
-            .background(EagleColors.Navy)
+            .then(if (transparent) Modifier else Modifier.background(EagleColors.Navy))
             .windowInsetsPadding(WindowInsets.statusBars)
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,

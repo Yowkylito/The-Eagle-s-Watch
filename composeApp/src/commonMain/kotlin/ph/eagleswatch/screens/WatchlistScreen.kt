@@ -29,6 +29,7 @@ import ph.eagleswatch.ui.EagleMetrics
 import ph.eagleswatch.ui.EmptyState
 import ph.eagleswatch.ui.ErrorState
 import ph.eagleswatch.ui.Glyph
+import ph.eagleswatch.ui.LocalBottomSpace
 import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.SkeletonRows
 
@@ -75,7 +76,7 @@ fun WatchlistScreen(
                     }
                 }
             } else {
-                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)) {
+                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 16.dp, bottom = LocalBottomSpace.current + 8.dp)) {
                     items(watched.chunked(columns), key = { row -> row.joinToString("|") { it.id } }) { row ->
                         ContentColumn(max = max) {
                             Row(

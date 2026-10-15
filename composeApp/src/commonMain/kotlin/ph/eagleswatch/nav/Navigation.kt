@@ -18,13 +18,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.widthIn
+import dev.chrisbanes.haze.hazeEffect
+import ph.eagleswatch.ui.GlassStyles
+import ph.eagleswatch.ui.LocalHaze
+import ph.eagleswatch.ui.TabBarHeight
+import ph.eagleswatch.ui.aurora
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,7 +68,7 @@ fun TopBar(
     modifier: Modifier = Modifier,
 ) {
     val layout = LocalLayout.current
-    Box(modifier.fillMaxWidth().background(EagleColors.Navy).windowInsetsPadding(WindowInsets.statusBars)) {
+    Box(modifier.fillMaxWidth().aurora().windowInsetsPadding(WindowInsets.statusBars)) {
         Row(Modifier.fillMaxWidth().height(60.dp).padding(horizontal = layout.gutter), verticalAlignment = Alignment.CenterVertically) {
             Image(painterResource(Res.drawable.eagle_logo), contentDescription = null, modifier = Modifier.size(28.dp).clip(RoundedCornerShape(8.dp)))
             Spacer(Modifier.width(10.dp))
@@ -101,17 +109,27 @@ private fun TopTab(destination: Destination, selected: Boolean, onClick: () -> U
     }
 }
 
-/** Phone navigation: four labelled tabs, the selected one marked by a tinted indicator behind its icon. */
+/**
+ * Phone navigation: a floating glass bar. Content scrolls underneath it and shows through, blurred. The
+ * selected tab sits in a tinted capsule. On Android before 12 the bar is a near-opaque white instead.
+ */
 @Composable
 fun BottomNav(current: Destination, onSelect: (Destination) -> Unit, modifier: Modifier = Modifier) {
-    Box(
-        modifier
-            .fillMaxWidth()
-            .background(EagleColors.Page)
-            .windowInsetsPadding(WindowInsets.navigationBars),
-    ) {
-        Box(Modifier.fillMaxWidth().height(1.dp).background(EagleColors.Line))
-        Row(Modifier.fillMaxWidth().height(68.dp)) {
+    val haze = LocalHaze.current
+    val shape = RoundedCornerShape(32.dp)
+    Box(modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).padding(horizontal = 20.dp, vertical = 12.dp), contentAlignment = Alignment.Center) {
+        Row(
+            Modifier
+                .widthIn(max = 460.dp)
+                .fillMaxWidth()
+                .height(TabBarHeight)
+                .shadow(elevation = 20.dp, shape = shape, ambientColor = Color(0x290B1220), spotColor = Color(0x290B1220))
+                .clip(shape)
+                .then(if (haze != null) Modifier.hazeEffect(haze, GlassStyles.Light) else Modifier.background(Color.White.copy(alpha = 0.96f)))
+                .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.95f), Color.White.copy(alpha = 0.4f))), shape)
+                .padding(5.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             Destination.entries.forEach { destination ->
                 NavTab(destination, selected = destination == current, modifier = Modifier.weight(1f)) { onSelect(destination) }
             }
@@ -121,34 +139,29 @@ fun BottomNav(current: Destination, onSelect: (Destination) -> Unit, modifier: M
 
 @Composable
 private fun NavTab(destination: Destination, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(27.dp)
     Column(
         modifier
             .fillMaxHeight()
-            .tappable(onClick = onClick, role = Role.Tab, selected = selected, tint = Color.Transparent, shape = RoundedCornerShape(0.dp)),
+            .clip(shape)
+            .background(if (selected) EagleColors.Blue.copy(alpha = 0.11f) else Color.Transparent)
+            .tappable(onClick = onClick, role = Role.Tab, selected = selected, tint = EagleColors.Blue.copy(alpha = 0.08f), shape = shape),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Box(
-            Modifier
-                .size(width = 60.dp, height = 32.dp)
-                .clip(CircleShape)
-                .background(if (selected) EagleColors.BlueSoft else Color.Transparent),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                glyph = if (selected) destination.selectedGlyph else destination.glyph,
-                tint = if (selected) EagleColors.Blue else EagleColors.Muted,
-                size = 22.dp,
-                weight = if (selected) 2.3f else 1.8f,
-            )
-        }
-        Spacer(Modifier.height(4.dp))
+        Icon(
+            glyph = if (selected) destination.selectedGlyph else destination.glyph,
+            tint = if (selected) EagleColors.Blue else EagleColors.Body,
+            size = 22.dp,
+            weight = if (selected) 2.3f else 1.8f,
+        )
+        Spacer(Modifier.height(2.dp))
         EText(
             destination.label,
             size = EagleType.Caption,
             weight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-            color = if (selected) EagleColors.Ink else EagleColors.Muted,
+            color = if (selected) EagleColors.Blue else EagleColors.Body,
+            maxLines = 1,
         )
     }
 }
-

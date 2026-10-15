@@ -53,8 +53,9 @@ There are no approval ratings, likes or reaction counts: nothing in the app is a
 
 A modern mobile product, built so the numbers and their sources lead.
 
-- **Header bands**: every screen starts on a deep navy band taken from the flag. On Explore it carries the headline figure, the approved contract value of the listed projects, and a status bar built from the real counts. On a project page it carries the title, place and three key figures.
-- **Cards on a canvas**: content sits in white cards on a soft grey canvas, with no borders, shadows, gradients or illustrations. Imagery is limited to real site photographs with their date, caption and source; where none exist the record says so.
+- **Glass**: a floating, frosted tab bar that content scrolls beneath; a frosted page bar on project pages; a frosted source sheet; and translucent glass panels on the header bands. Backdrop blur comes from [Haze](https://github.com/chrisbanes/haze). On Android before 12, where the platform cannot blur, these surfaces fall back to a near-opaque tint.
+- **Header bands**: every screen starts on a deep navy band taken from the flag, lifted by a soft blue light. On Explore it carries the headline figure, the approved contract value of the listed projects, and a status bar built from the real counts. On a project page it carries the title, place and three key figures.
+- **Cards on a canvas**: content sits in round-cornered white cards on a soft grey canvas, with no borders or illustrations. Imagery is limited to real site photographs with their date, caption and source; where none exist the record says so.
 - **Type**: Inter Tight for titles and figures, Inter for text, with tabular numerals so figures line up. Nothing a citizen reads is under 12sp.
 - **Colour**: one blue for actions, five status colours that always travel with a distinct shape (outline, half disc, triangle, square, ticked disc) and a label, and the eagle's gold only for the brand. Text reads at 4.5:1 or better.
 - **Provenance one tap away**: each figure carries a small source badge (Verified, Agency-reported, Community-reported, Not available). Tapping it opens a sheet with the source, the date and what the label means.

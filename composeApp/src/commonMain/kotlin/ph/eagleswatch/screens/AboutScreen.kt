@@ -44,6 +44,7 @@ import ph.eagleswatch.ui.FlagMark
 import ph.eagleswatch.ui.Glyph
 import ph.eagleswatch.ui.Hairline
 import ph.eagleswatch.ui.LinkRow
+import ph.eagleswatch.ui.LocalBottomSpace
 import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.Notice
 import ph.eagleswatch.ui.NoticeTone
@@ -172,6 +173,7 @@ fun AboutScreen(citizen: CitizenState, onReport: () -> Unit, modifier: Modifier 
                     Spacer(Modifier.height(8.dp))
                     EText("Built by citizens, for citizens. Non-partisan and open source.", size = EagleType.Caption, color = EagleColors.Muted)
                 }
+                Spacer(Modifier.height(LocalBottomSpace.current))
             }
         }
     }

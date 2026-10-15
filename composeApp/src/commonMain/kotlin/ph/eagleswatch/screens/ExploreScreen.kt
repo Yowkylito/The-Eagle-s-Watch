@@ -33,6 +33,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -90,6 +91,10 @@ import ph.eagleswatch.ui.Wrap
 import ph.eagleswatch.ui.compactPesos
 import ph.eagleswatch.ui.consumeTouches
 import ph.eagleswatch.ui.fill
+import ph.eagleswatch.ui.LocalBottomSpace
+import ph.eagleswatch.ui.LocalChrome
+import ph.eagleswatch.ui.aurora
+import ph.eagleswatch.ui.glass
 
 /** Approved contract amount bands for the filter. */
 enum class AmountBand(val label: String, private val min: Long, private val max: Long?) {
@@ -181,8 +186,13 @@ fun ExploreScreen(
 
     PlatformBackHandler(enabled = showFilters) { showFilters = false }
 
+    // The filter sheet has its own bottom button, so the floating tab bar steps aside while it is open.
+    val chrome = LocalChrome.current
+    LaunchedEffect(showFilters) { chrome.tabBarHidden = showFilters }
+    DisposableEffect(Unit) { onDispose { chrome.tabBarHidden = false } }
+
     Box(modifier.fillMaxSize().background(EagleColors.Canvas)) {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = LocalBottomSpace.current + 8.dp)) {
             item(key = "hero") {
                 Hero(
                     all = all,
@@ -303,7 +313,7 @@ private fun Hero(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(EagleColors.Navy)
+            .aurora()
             .then(if (layout.wide) Modifier else Modifier.windowInsetsPadding(WindowInsets.statusBars))
             .padding(bottom = 20.dp),
     ) {
@@ -318,7 +328,9 @@ private fun Hero(
                             IconButton(Glyph.Flag, "Report a problem", onClick = onReport, label = "Report", iconSize = 18.dp, tint = EagleColors.OnNavy, filled = Color.White.copy(alpha = 0.12f))
                         }
                     }
-                    Spacer(Modifier.height(if (layout.wide) 28.dp else 16.dp))
+                    Spacer(Modifier.height(if (layout.wide) 28.dp else 12.dp))
+                    // The headline figure in a glass panel, like a widget on a home screen.
+                    Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(18.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         EText("Approved contract value", size = EagleType.Label, weight = FontWeight.Medium, color = EagleColors.OnNavyMuted)
                         if (dataset?.sample == true) {
@@ -350,8 +362,9 @@ private fun Hero(
                         EText("Data as of ${dataset.asOf.format()}", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.OnNavyMuted)
                     }
                     if (all.isNotEmpty()) {
-                        Spacer(Modifier.height(18.dp))
+                        Spacer(Modifier.height(16.dp))
                         StatusDistribution(all)
+                    }
                     }
                 }
                 Spacer(Modifier.height(8.dp))

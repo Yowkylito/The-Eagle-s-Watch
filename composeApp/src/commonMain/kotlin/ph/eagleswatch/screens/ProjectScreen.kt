@@ -18,6 +18,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
+import ph.eagleswatch.ui.GlassStyles
+import ph.eagleswatch.ui.aurora
+import ph.eagleswatch.ui.glass
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -113,27 +121,10 @@ fun ProjectScreen(
     val today = remember { Day.today() }
     val watching = citizen.isWatching(project.id)
 
-    Column(Modifier.fillMaxSize().background(EagleColors.Canvas).consumeTouches()) {
-        PageBar(
-            onBack = onBack,
-            onDark = true,
-            actions = {
-                IconButton(Glyph.Share, "Share this record", onClick = { shareText(project.title, shareSummary(project)) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
-                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
-                IconButton(
-                    glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
-                    description = if (watching) "Stop watching this project" else "Watch this project",
-                    onClick = { citizen.toggleWatch(project.id) },
-                    tint = EagleColors.OnNavy,
-                    iconSize = 20.dp,
-                    toggled = watching,
-                    label = if (watching) "Watching" else "Watch",
-                    filled = if (watching) EagleColors.Blue else Color.White.copy(alpha = 0.12f),
-                )
-                Spacer(Modifier.width(4.dp))
-            },
-        )
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).windowInsetsPadding(WindowInsets.navigationBars)) {
+    // The page scrolls under a frosted navy bar, so cards blur behind it as they pass.
+    val pageHaze = rememberHazeState()
+    Box(Modifier.fillMaxSize().background(EagleColors.Canvas).consumeTouches()) {
+        Column(Modifier.fillMaxSize().hazeSource(pageHaze).verticalScroll(rememberScrollState()).windowInsetsPadding(WindowInsets.navigationBars)) {
             Hero(project, today)
             ContentColumn(max = if (layout.wide) 1120.dp else EagleMetrics.ContentMax) {
                 val gap = Arrangement.spacedBy(EagleMetrics.CardGap)
@@ -167,6 +158,26 @@ fun ProjectScreen(
             }
             Spacer(Modifier.height(24.dp))
         }
+        PageBar(
+            onBack = onBack,
+            transparent = true,
+            modifier = Modifier.hazeEffect(pageHaze, GlassStyles.Navy),
+            actions = {
+                IconButton(Glyph.Share, "Share this record", onClick = { shareText(project.title, shareSummary(project)) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
+                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
+                IconButton(
+                    glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
+                    description = if (watching) "Stop watching this project" else "Watch this project",
+                    onClick = { citizen.toggleWatch(project.id) },
+                    tint = EagleColors.OnNavy,
+                    iconSize = 20.dp,
+                    toggled = watching,
+                    label = if (watching) "Watching" else "Watch",
+                    filled = if (watching) EagleColors.Blue else Color.White.copy(alpha = 0.12f),
+                )
+                Spacer(Modifier.width(4.dp))
+            },
+        )
     }
 }
 
@@ -184,9 +195,12 @@ private fun Hero(project: Project, today: Day) {
         project.status == Status.Planned -> (s.start?.monthYear() ?: "—") to "Planned start"
         else -> (elapsed?.let { percent(it) } ?: "—") to "Time used"
     }
-    Box(Modifier.fillMaxWidth().background(EagleColors.Navy)) {
+    Box(Modifier.fillMaxWidth().aurora()) {
         ContentColumn(max = if (layout.wide) 1120.dp else EagleMetrics.ContentMax) {
             Column(Modifier.padding(horizontal = layout.gutter).padding(top = 4.dp, bottom = 22.dp)) {
+                // Room for the frosted page bar that floats over the top of the band.
+                Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
+                Spacer(Modifier.height(56.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     StatusTag(project.status)
                     if (project.sample) SampleTag(onDark = true)
@@ -206,7 +220,7 @@ private fun Hero(project: Project, today: Day) {
                 }
                 Spacer(Modifier.height(18.dp))
                 Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(EagleMetrics.RadiusCard)).background(EagleColors.NavyRaised).padding(16.dp),
+                    Modifier.fillMaxWidth().glass(RoundedCornerShape(EagleMetrics.RadiusCard)).padding(16.dp),
                 ) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Stat(

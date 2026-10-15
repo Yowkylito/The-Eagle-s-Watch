@@ -38,6 +38,7 @@ import ph.eagleswatch.ui.ErrorState
 import ph.eagleswatch.ui.FilterChip
 import ph.eagleswatch.ui.Glyph
 import ph.eagleswatch.ui.IconTile
+import ph.eagleswatch.ui.LocalBottomSpace
 import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.SkeletonRows
 import ph.eagleswatch.ui.Tag
@@ -71,7 +72,7 @@ fun UpdatesScreen(store: ProjectStore, citizen: CitizenState, onOpen: (Project) 
             }
             is LoadState.Ready -> LazyColumn(
                 Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp),
+                contentPadding = PaddingValues(top = 4.dp, bottom = LocalBottomSpace.current + 8.dp),
                 verticalArrangement = Arrangement.spacedBy(EagleMetrics.CardGap),
             ) {
                 if (feed.isEmpty()) {
