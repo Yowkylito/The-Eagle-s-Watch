@@ -21,11 +21,17 @@ data class Day(val year: Int, val month: Int, val day: Int) : Comparable<Day> {
 
     override fun compareTo(other: Day): Int = epochDay.compareTo(other.epochDay)
 
+    /** Days from this date to [other]; negative when [other] is earlier. */
+    fun daysUntil(other: Day): Long = other.epochDay - epochDay
+
     /** "Mar 3, 2025" */
     fun format(): String = "${MonthNames[month - 1]} $day, $year"
 
     /** "Mar 2025" */
     fun monthYear(): String = "${MonthNames[month - 1]} $year"
+
+    /** "2025-03-03", for machine-readable places such as share text. */
+    fun iso(): String = "$year-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}"
 
     companion object {
         fun ofEpochDay(epochDay: Long): Day {

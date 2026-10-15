@@ -54,7 +54,7 @@ fun Subject.issues(): List<String> = when {
         "Services not delivered",
     )
     else -> listOf(
-        "Wrong information in the app",
+        WRONG_INFORMATION,
         "A project is missing",
         "Suggestion for The Eagle's Watch",
     )
@@ -107,6 +107,15 @@ val reportFacts = listOf(
 
 /** Answer for any question the reporter could not or would not answer. */
 const val NOT_SURE = "Not sure"
+
+/** A report started from a specific prompt in the app, with its first answers filled in. */
+enum class ReportPreset {
+    /** "Report incorrect or outdated information" on a project page. */
+    IncorrectInformation,
+}
+
+/** The issue a reporter picks when the app itself has something wrong. */
+const val WRONG_INFORMATION = "Wrong information in the app"
 
 /** A report as the citizen filed it. */
 data class Report(

@@ -1,6 +1,8 @@
 package ph.eagleswatch.ui
 
+import kotlin.math.abs
 import kotlin.math.roundToLong
+import ph.eagleswatch.content.Coordinates
 
 /** "12,500" for 12500. */
 fun groupDigits(amount: Long): String =
@@ -9,7 +11,7 @@ fun groupDigits(amount: Long): String =
 /** "₱12,500" for 12500. */
 fun formatPesos(amount: Long): String = "₱" + groupDigits(amount)
 
-/** "₱48.5M", "₱2.15M", "₱850K", "₱1.2B": short enough for a card, precise to three figures. */
+/** "₱48.5M", "₱2.15M", "₱850K", "₱1.2B": short enough for a row, precise to three figures. */
 fun compactPesos(amount: Long): String = "₱" + compact(amount)
 
 /** "1.2K" for 1184, "412" for 412. */
@@ -29,13 +31,31 @@ private fun compact(value: Long): String {
         scaled >= 10 -> 1
         else -> 2
     }
-    var factor = 1L
-    repeat(decimals) { factor *= 10 }
-    val rounded = (scaled * factor).roundToLong()
-    val whole = rounded / factor
-    val fraction = (rounded % factor).toString().padStart(decimals, '0').trimEnd('0')
-    return if (fraction.isEmpty()) "$whole$suffix" else "$whole.$fraction$suffix"
+    val text = fixed(scaled, decimals)
+    return (if (decimals > 0) text.trimEnd('0').trimEnd('.') else text) + suffix
 }
 
 /** "78%" */
 fun percent(fraction: Float): String = "${(fraction * 100).roundToLong()}%"
+
+/** [value] with exactly [decimals] digits after the point, without platform formatting APIs. */
+fun fixed(value: Double, decimals: Int): String {
+    var factor = 1L
+    repeat(decimals) { factor *= 10 }
+    val rounded = (abs(value) * factor).roundToLong()
+    val whole = rounded / factor
+    val sign = if (value < 0) "-" else ""
+    if (decimals == 0) return "$sign$whole"
+    val fraction = (rounded % factor).toString().padStart(decimals, '0')
+    return "$sign$whole.$fraction"
+}
+
+/** "14.967° N, 120.633° E" */
+fun formatCoordinates(c: Coordinates): String {
+    val ns = if (c.lat >= 0) "N" else "S"
+    val ew = if (c.lon >= 0) "E" else "W"
+    return "${fixed(abs(c.lat), 3)}° $ns, ${fixed(abs(c.lon), 3)}° $ew"
+}
+
+/** "1 day", "14 days". */
+fun days(count: Long): String = if (count == 1L) "1 day" else "$count days"

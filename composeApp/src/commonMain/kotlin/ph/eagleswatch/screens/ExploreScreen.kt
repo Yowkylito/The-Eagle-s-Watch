@@ -7,9 +7,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +17,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -33,12 +31,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,321 +44,567 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import ph.eagleswatch.content.Category
+import ph.eagleswatch.content.Day
 import ph.eagleswatch.content.Level
 import ph.eagleswatch.content.Project
 import ph.eagleswatch.content.Status
-import ph.eagleswatch.content.projects
+import ph.eagleswatch.data.Dataset
+import ph.eagleswatch.data.LoadState
+import ph.eagleswatch.data.ProjectStore
 import ph.eagleswatch.resources.Res
 import ph.eagleswatch.resources.eagle_logo
 import ph.eagleswatch.state.CitizenState
-import ph.eagleswatch.ui.ActionButton
+import ph.eagleswatch.state.PlatformBackHandler
+import ph.eagleswatch.ui.Button
 import ph.eagleswatch.ui.ButtonStyle
-import ph.eagleswatch.ui.ChoiceChip
-import ph.eagleswatch.ui.Divider
 import ph.eagleswatch.ui.EText
 import ph.eagleswatch.ui.EagleColors
+import ph.eagleswatch.ui.EagleMetrics
+import ph.eagleswatch.ui.EagleType
+import ph.eagleswatch.ui.EmptyState
+import ph.eagleswatch.ui.ErrorState
+import ph.eagleswatch.ui.FilterChip
 import ph.eagleswatch.ui.Glyph
+import ph.eagleswatch.ui.Hairline
 import ph.eagleswatch.ui.Icon
-import ph.eagleswatch.ui.LocalFonts
+import ph.eagleswatch.ui.IconButton
 import ph.eagleswatch.ui.LocalLayout
-import ph.eagleswatch.ui.SampleBadge
-import ph.eagleswatch.ui.TextAction
+import ph.eagleswatch.ui.Notice
+import ph.eagleswatch.ui.NoticeTone
+import ph.eagleswatch.ui.SampleTag
+import ph.eagleswatch.ui.SearchField
+import ph.eagleswatch.ui.SectionLabel
+import ph.eagleswatch.ui.SkeletonRows
 import ph.eagleswatch.ui.Wrap
 import ph.eagleswatch.ui.compactPesos
-import ph.eagleswatch.ui.focusRing
-import ph.eagleswatch.ui.glyph
+import ph.eagleswatch.ui.hairlineBelow
 
-/** Which projects the citizen has narrowed the feed to. Empty sets mean "any". */
-private data class Filters(
-    val query: String = "",
-    val category: Category? = null,
-    val levels: Set<Level> = emptySet(),
-    val statuses: Set<Status> = emptySet(),
-) {
-    val extra: Int get() = levels.size + statuses.size
+/** Approved contract amount bands for the filter. */
+enum class AmountBand(val label: String, private val min: Long, private val max: Long?) {
+    Under5M("Under ₱5M", 0, 5_000_000),
+    From5To25M("₱5M to ₱25M", 5_000_000, 25_000_000),
+    From25To100M("₱25M to ₱100M", 25_000_000, 100_000_000),
+    Over100M("₱100M and above", 100_000_000, null),
+    ;
 
-    fun matches(project: Project): Boolean {
-        val q = query.trim().lowercase()
-        val text = q.isEmpty() || listOf(project.title, project.place, project.proposedBy, project.implementedBy)
-            .any { it.lowercase().contains(q) }
-        return text &&
-            (category == null || project.category == category) &&
-            (levels.isEmpty() || project.level in levels) &&
-            (statuses.isEmpty() || project.status in statuses)
-    }
+    fun contains(amount: Long?): Boolean = amount != null && amount >= min && (max == null || amount < max)
 }
 
-/** Every posted project, searchable and grouped by what it builds. */
+enum class Sort(val label: String) {
+    LatestUpdate("Latest update"),
+    LargestContract("Largest contract"),
+    BehindSchedule("Most behind schedule"),
+    Title("Title, A to Z"),
+}
+
+/** Which projects the citizen has narrowed the list to. Empty sets mean "any". */
+@Immutable
+data class Filters(
+    val query: String = "",
+    val statuses: Set<Status> = emptySet(),
+    val categories: Set<Category> = emptySet(),
+    val levels: Set<Level> = emptySet(),
+    val provinces: Set<String> = emptySet(),
+    val agencies: Set<String> = emptySet(),
+    val bands: Set<AmountBand> = emptySet(),
+) {
+    val facetCount: Int get() = statuses.size + categories.size + levels.size + provinces.size + agencies.size + bands.size
+    val isDefault: Boolean get() = query.isBlank() && facetCount == 0
+
+    fun matches(p: Project): Boolean =
+        p.matches(query) &&
+            (statuses.isEmpty() || p.status in statuses) &&
+            (categories.isEmpty() || p.category in categories) &&
+            (levels.isEmpty() || p.level in levels) &&
+            (provinces.isEmpty() || p.place.province in provinces) &&
+            (agencies.isEmpty() || p.implementingAgency?.name in agencies) &&
+            (bands.isEmpty() || bands.any { it.contains(p.contract.amount) })
+
+    fun clearFacets(): Filters = Filters(query = query)
+}
+
+private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value
+
+/** One applied facet value, shown as a removable chip under the search box. */
+private class Applied(val label: String, val remove: (Filters) -> Filters)
+
+private fun Filters.applied(): List<Applied> =
+    categories.map { c -> Applied(c.label) { it.copy(categories = it.categories - c) } } +
+        levels.map { l -> Applied(l.label) { it.copy(levels = it.levels - l) } } +
+        provinces.map { p -> Applied(p) { it.copy(provinces = it.provinces - p) } } +
+        agencies.map { a -> Applied(a) { it.copy(agencies = it.agencies - a) } } +
+        bands.map { b -> Applied(b.label) { it.copy(bands = it.bands - b) } }
+
+fun sortProjects(list: List<Project>, sort: Sort, today: Day): List<Project> = when (sort) {
+    Sort.LatestUpdate -> list.sortedByDescending { it.latestUpdate?.date?.epochDay ?: Long.MIN_VALUE }
+    Sort.LargestContract -> list.sortedByDescending { it.contract.amount ?: -1L }
+    Sort.BehindSchedule -> list.sortedByDescending { scheduleGap(it, today) ?: Float.NEGATIVE_INFINITY }
+    Sort.Title -> list.sortedBy { it.title.lowercase() }
+}
+
+/**
+ * Every project record, searchable and filterable. The first screen answers: which projects, where, how
+ * much public money, what status, when last updated, and how to get at the evidence.
+ */
 @Composable
-fun ExploreScreen(citizen: CitizenState, onOpen: (Project) -> Unit, modifier: Modifier = Modifier) {
+fun ExploreScreen(
+    store: ProjectStore,
+    citizen: CitizenState,
+    onOpen: (Project) -> Unit,
+    onReport: () -> Unit,
+    onAbout: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val layout = LocalLayout.current
+    val today = remember { Day.today() }
     var filters by remember { mutableStateOf(Filters()) }
+    var sort by remember { mutableStateOf(Sort.LatestUpdate) }
     var showFilters by rememberSaveable { mutableStateOf(false) }
-    val shown = projects.filter(filters::matches)
+    var showSort by rememberSaveable { mutableStateOf(false) }
+    val state = store.state
+    val all = store.projects
+    val shown = remember(all, filters, sort) { sortProjects(all.filter(filters::matches), sort, today) }
+
+    PlatformBackHandler(enabled = showFilters) { showFilters = false }
 
     Box(modifier.fillMaxSize().background(EagleColors.Page)) {
         Column(Modifier.fillMaxSize()) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .background(EagleColors.Page)
-                    .then(if (layout.wide) Modifier else Modifier.windowInsetsPadding(WindowInsets.statusBars)),
-            ) {
-                SearchRow(
-                    query = filters.query,
-                    onQuery = { filters = filters.copy(query = it) },
-                    extraFilters = filters.extra,
-                    onFilters = { showFilters = true },
+            ExploreHeader(
+                all = all,
+                filters = filters,
+                onFilters = { filters = it },
+                onOpenFilters = { showFilters = true },
+                onReport = onReport,
+            )
+            when (state) {
+                LoadState.Loading -> LoadingList()
+                is LoadState.Failed -> ContentColumn {
+                    ErrorState(
+                        title = "The records could not be loaded",
+                        body = state.message,
+                        onRetry = store::retry,
+                        modifier = Modifier.padding(horizontal = layout.gutter),
+                    )
+                }
+                is LoadState.Ready -> Results(
+                    dataset = state.dataset,
+                    shown = shown,
+                    filters = filters,
+                    sort = sort,
+                    showSort = showSort,
+                    onToggleSort = { showSort = !showSort },
+                    onSort = { sort = it; showSort = false },
+                    onClear = { filters = Filters() },
+                    today = today,
+                    citizen = citizen,
+                    onOpen = onOpen,
+                    onAbout = onAbout,
                 )
-                CategoryTabs(selected = filters.category, onSelect = { filters = filters.copy(category = it) })
-                Divider(Modifier.fillMaxWidth())
-            }
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 300.dp),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = layout.gutter, end = layout.gutter, top = 16.dp, bottom = 32.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
-                verticalArrangement = Arrangement.spacedBy(28.dp),
-            ) {
-                item(span = { GridItemSpan(maxLineSpan) }) { Summary(shown) }
-                if (shown.isEmpty()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) { NoResults(onClear = { filters = Filters() }) }
-                }
-                items(shown.take(3), key = { it.id }) { ProjectCard(it, citizen, onOpen = { onOpen(it) }) }
-                if (shown.size >= 3 && filters == Filters()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) { FactCard(Modifier.widthIn(max = 640.dp)) }
-                }
-                items(shown.drop(3), key = { it.id }) { ProjectCard(it, citizen, onOpen = { onOpen(it) }) }
             }
         }
 
         AnimatedVisibility(
             visible = showFilters,
-            enter = fadeIn() + slideInVertically { it / 3 },
-            exit = fadeOut() + slideOutVertically { it / 3 },
+            enter = fadeIn() + slideInVertically { it / 4 },
+            exit = fadeOut() + slideOutVertically { it / 4 },
         ) {
-            FilterSheet(
-                filters = filters,
-                onChange = { filters = it },
-                onClose = { showFilters = false },
-            )
+            FilterSheet(all = all, filters = filters, onChange = { filters = it }, onClose = { showFilters = false })
         }
     }
 }
 
 @Composable
-private fun SearchRow(query: String, onQuery: (String) -> Unit, extraFilters: Int, onFilters: () -> Unit) {
+private fun ExploreHeader(
+    all: List<Project>,
+    filters: Filters,
+    onFilters: (Filters) -> Unit,
+    onOpenFilters: () -> Unit,
+    onReport: () -> Unit,
+) {
     val layout = LocalLayout.current
-    val fonts = LocalFonts.current
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = layout.gutter).padding(top = 12.dp, bottom = 8.dp),
-        horizontalArrangement = if (layout.wide) Arrangement.Center else Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(EagleColors.Page)
+            .hairlineBelow()
+            .then(if (layout.wide) Modifier else Modifier.windowInsetsPadding(WindowInsets.statusBars)),
     ) {
         if (!layout.wide) {
-            Image(
-                painter = painterResource(Res.drawable.eagle_logo),
-                contentDescription = "The Eagle's Watch",
-                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)),
-            )
-            Spacer(Modifier.width(10.dp))
+            Row(
+                Modifier.fillMaxWidth().height(48.dp).padding(start = layout.gutter, end = layout.gutter - 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.eagle_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp).clip(RoundedCornerShape(6.dp)),
+                )
+                Spacer(Modifier.width(8.dp))
+                EText(
+                    "The Eagle's Watch",
+                    modifier = Modifier.weight(1f),
+                    display = true,
+                    size = 20.sp,
+                    color = EagleColors.Blue,
+                    heading = true,
+                )
+                IconButton(Glyph.Flag, "Report a problem", onClick = onReport, label = "Report", iconSize = 18.dp)
+            }
         }
+        ContentColumn {
+            Column {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = layout.gutter)
+                        .padding(top = if (layout.wide) 16.dp else 2.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SearchField(
+                        query = filters.query,
+                        onQuery = { onFilters(filters.copy(query = it)) },
+                        modifier = Modifier.weight(1f),
+                        placeholder = "Search projects, places, agencies",
+                        description = "Search projects",
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    IconButton(
+                        glyph = Glyph.Filter,
+                        description = if (filters.facetCount > 0) "Filters, ${filters.facetCount} applied" else "Filters",
+                        onClick = onOpenFilters,
+                        label = if (filters.facetCount > 0) "Filters · ${filters.facetCount}" else "Filters",
+                        iconSize = 18.dp,
+                        bordered = true,
+                    )
+                }
+                StatusStrip(all, filters, onFilters)
+                val applied = filters.applied()
+                if (applied.isNotEmpty()) {
+                    Wrap(Modifier.padding(horizontal = layout.gutter).padding(bottom = 4.dp), spacing = 6.dp) {
+                        applied.forEach { chip ->
+                            FilterChip(
+                                label = chip.label,
+                                selected = true,
+                                onClick = { onFilters(chip.remove(filters)) },
+                                role = Role.Button,
+                                leading = { Icon(Glyph.Close, tint = EagleColors.Blue, size = 12.dp, weight = 2.6f) },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Status is the first thing a citizen narrows by, so it lives in a strip under the search box. */
+@Composable
+private fun StatusStrip(all: List<Project>, filters: Filters, onFilters: (Filters) -> Unit) {
+    val layout = LocalLayout.current
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = layout.gutter),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        item(key = "all") {
+            FilterChip(
+                label = "All",
+                selected = filters.statuses.isEmpty(),
+                onClick = { onFilters(filters.copy(statuses = emptySet())) },
+                count = all.size,
+                role = Role.RadioButton,
+            )
+        }
+        items(Status.entries, key = { it.name }) { status ->
+            val n = all.count { it.status == status }
+            FilterChip(
+                label = status.label,
+                selected = status in filters.statuses,
+                onClick = { onFilters(filters.copy(statuses = filters.statuses.toggle(status))) },
+                count = n,
+                enabled = n > 0 || status in filters.statuses,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingList() {
+    val layout = LocalLayout.current
+    // Near-instant loads show nothing; the skeleton appears only when the wait is long enough to notice.
+    var show by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(300)
+        show = true
+    }
+    if (show) ContentColumn { SkeletonRows(4, Modifier.padding(horizontal = layout.gutter)) }
+}
+
+@Composable
+private fun Results(
+    dataset: Dataset,
+    shown: List<Project>,
+    filters: Filters,
+    sort: Sort,
+    showSort: Boolean,
+    onToggleSort: () -> Unit,
+    onSort: (Sort) -> Unit,
+    onClear: () -> Unit,
+    today: Day,
+    citizen: CitizenState,
+    onOpen: (Project) -> Unit,
+    onAbout: () -> Unit,
+) {
+    val layout = LocalLayout.current
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(if (layout.wide) 2 else 1),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 24.dp),
+    ) {
+        if (dataset.sample) {
+            item(key = "sample", span = { GridItemSpan(maxLineSpan) }) {
+                Notice(
+                    text = dataset.note,
+                    modifier = Modifier.padding(horizontal = layout.gutter).padding(top = 8.dp),
+                    tone = NoticeTone.Sample,
+                    title = "Sample dataset",
+                    actionLabel = "About this data",
+                    onAction = onAbout,
+                )
+            }
+        }
+        item(key = "summary", span = { GridItemSpan(maxLineSpan) }) {
+            Summary(dataset, shown, sort, showSort, onToggleSort, onSort)
+        }
+        if (shown.isEmpty()) {
+            item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
+                EmptyState(
+                    glyph = Glyph.Search,
+                    title = "No projects match",
+                    body = if (filters.query.isNotBlank()) {
+                        "Nothing in the ${dataset.projects.size} records matches \"${filters.query.trim()}\" with these filters. " +
+                            "Try a municipality, a province or an agency, or clear the filters."
+                    } else {
+                        "No records match these filters. Clear some of them to see more."
+                    },
+                    modifier = Modifier.padding(horizontal = layout.gutter),
+                    actionLabel = "Clear search and filters",
+                    onAction = onClear,
+                )
+            }
+        }
+        items(shown, key = { it.id }) { project ->
+            ProjectRow(
+                project = project,
+                today = today,
+                watching = citizen.isWatching(project.id),
+                onOpen = { onOpen(project) },
+                onToggleWatch = { citizen.toggleWatch(project.id) },
+            )
+        }
+        item(key = "end", span = { GridItemSpan(maxLineSpan) }) {
+            EText(
+                text = "${dataset.name} · ${dataset.projects.size} records · as of ${dataset.asOf.format()}",
+                modifier = Modifier.padding(horizontal = layout.gutter, vertical = 12.dp),
+                size = EagleType.Caption,
+                color = EagleColors.Muted,
+            )
+        }
+    }
+}
+
+@Composable
+private fun Summary(
+    dataset: Dataset,
+    shown: List<Project>,
+    sort: Sort,
+    showSort: Boolean,
+    onToggleSort: () -> Unit,
+    onSort: (Sort) -> Unit,
+) {
+    val layout = LocalLayout.current
+    val amounts = shown.mapNotNull { it.contract.amount }
+    val total = amounts.sum()
+    val missing = shown.size - amounts.size
+    Column(Modifier.fillMaxWidth().hairlineBelow()) {
+        Row(
+            Modifier.fillMaxWidth().padding(start = layout.gutter, end = layout.gutter - 8.dp, top = 10.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    EText(
+                        text = if (shown.size == dataset.projects.size) "${shown.size} projects" else "${shown.size} of ${dataset.projects.size} projects",
+                        size = EagleType.Body,
+                        weight = FontWeight.SemiBold,
+                        tabular = true,
+                    )
+                    if (dataset.sample) {
+                        Spacer(Modifier.width(8.dp))
+                        SampleTag()
+                    }
+                }
+                EText(
+                    text = buildString {
+                        append(if (amounts.isEmpty()) "No contract amounts on file" else "${compactPesos(total)} in approved contracts")
+                        if (missing > 0 && amounts.isNotEmpty()) append(" · $missing without an amount")
+                    },
+                    size = EagleType.Caption,
+                    lineHeight = 16.sp,
+                    color = EagleColors.Muted,
+                    tabular = true,
+                )
+            }
+            Button(
+                label = sort.label,
+                onClick = onToggleSort,
+                style = ButtonStyle.Quiet,
+                compact = true,
+                glyph = Glyph.Sort,
+            )
+        }
+        AnimatedVisibility(visible = showSort) {
+            Column(Modifier.padding(horizontal = layout.gutter).padding(bottom = 8.dp)) {
+                SectionLabel("Sort by")
+                Wrap(spacing = 6.dp) {
+                    Sort.entries.forEach { option ->
+                        FilterChip(option.label, selected = option == sort, onClick = { onSort(option) }, role = Role.RadioButton)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FilterSheet(all: List<Project>, filters: Filters, onChange: (Filters) -> Unit, onClose: () -> Unit) {
+    val layout = LocalLayout.current
+    val count = all.count(filters::matches)
+    Column(Modifier.fillMaxSize().background(EagleColors.Page)) {
+        PageBar(
+            onBack = onClose,
+            title = "Filters",
+            backGlyph = Glyph.Close,
+            backDescription = "Close filters",
+            actions = {
+                Button(
+                    "Clear all",
+                    onClick = { onChange(filters.clearFacets()) },
+                    style = ButtonStyle.Quiet,
+                    compact = true,
+                    enabled = filters.facetCount > 0,
+                )
+            },
+        )
+        Column(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = layout.gutter, vertical = 16.dp),
+        ) {
+            Column(Modifier.widthIn(max = EagleMetrics.ContentMax)) {
+                FacetSection(
+                    title = "Status",
+                    options = Status.entries,
+                    label = { it.label },
+                    selected = filters.statuses,
+                    count = { s -> all.count { filters.copy(statuses = setOf(s)).matches(it) } },
+                    onToggle = { onChange(filters.copy(statuses = filters.statuses.toggle(it))) },
+                )
+                FacetSection(
+                    title = "Type of project",
+                    options = Category.entries,
+                    label = { it.label },
+                    selected = filters.categories,
+                    count = { c -> all.count { filters.copy(categories = setOf(c)).matches(it) } },
+                    onToggle = { onChange(filters.copy(categories = filters.categories.toggle(it))) },
+                )
+                FacetSection(
+                    title = "Level of government",
+                    options = Level.entries,
+                    label = { it.label },
+                    selected = filters.levels,
+                    count = { l -> all.count { filters.copy(levels = setOf(l)).matches(it) } },
+                    onToggle = { onChange(filters.copy(levels = filters.levels.toggle(it))) },
+                )
+                FacetSection(
+                    title = "Province",
+                    options = all.map { it.place.province }.distinct().sorted(),
+                    label = { it },
+                    selected = filters.provinces,
+                    count = { p -> all.count { filters.copy(provinces = setOf(p)).matches(it) } },
+                    onToggle = { onChange(filters.copy(provinces = filters.provinces.toggle(it))) },
+                )
+                FacetSection(
+                    title = "Implementing agency",
+                    options = all.mapNotNull { it.implementingAgency?.name }.distinct().sorted(),
+                    label = { it },
+                    selected = filters.agencies,
+                    count = { a -> all.count { filters.copy(agencies = setOf(a)).matches(it) } },
+                    onToggle = { onChange(filters.copy(agencies = filters.agencies.toggle(it))) },
+                )
+                FacetSection(
+                    title = "Approved contract amount",
+                    options = AmountBand.entries,
+                    label = { it.label },
+                    selected = filters.bands,
+                    count = { b -> all.count { filters.copy(bands = setOf(b)).matches(it) } },
+                    onToggle = { onChange(filters.copy(bands = filters.bands.toggle(it))) },
+                )
+            }
+        }
+        Hairline()
         Row(
             Modifier
-                .weight(1f, fill = !layout.wide)
-                .widthIn(max = 760.dp)
                 .fillMaxWidth()
-                .height(54.dp)
-                .shadow(6.dp, RoundedCornerShape(50))
-                .clip(RoundedCornerShape(50))
-                .background(EagleColors.Page)
-                .padding(start = 18.dp, end = 7.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .padding(horizontal = layout.gutter, vertical = 10.dp),
         ) {
-            Icon(Glyph.Search, tint = EagleColors.Ink, size = 20.dp)
-            Spacer(Modifier.width(12.dp))
-            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                if (query.isEmpty()) {
-                    EText("Search projects, places or agencies", size = 15.sp, color = EagleColors.Muted, maxLines = 1, ellipsis = true)
-                }
-                BasicTextField(
-                    value = query,
-                    onValueChange = onQuery,
-                    singleLine = true,
-                    textStyle = TextStyle(fontFamily = fonts.sans, fontSize = 15.sp, color = EagleColors.Ink),
-                    cursorBrush = SolidColor(EagleColors.Blue),
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Search projects" },
-                )
-            }
-            if (query.isNotEmpty()) {
-                Box(
-                    Modifier.size(32.dp).clip(CircleShape).clickable(role = Role.Button) { onQuery("") }
-                        .semantics { contentDescription = "Clear search" },
-                    contentAlignment = Alignment.Center,
-                ) { Icon(Glyph.Close, tint = EagleColors.Muted, size = 16.dp) }
-            }
-            Spacer(Modifier.width(4.dp))
-            Box(
-                Modifier
-                    .size(40.dp)
-                    .focusRing(CircleShape)
-                    .clip(CircleShape)
-                    .border(1.dp, if (extraFilters > 0) EagleColors.Ink else EagleColors.Line, CircleShape)
-                    .clickable(role = Role.Button, onClick = onFilters)
-                    .semantics { contentDescription = "Filters" },
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(Glyph.Filter, tint = EagleColors.Ink, size = 18.dp)
-                if (extraFilters > 0) {
-                    Box(
-                        Modifier.align(Alignment.TopEnd).size(16.dp).background(EagleColors.Ink, CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) { EText("$extraFilters", size = 10.sp, weight = FontWeight.SemiBold, color = EagleColors.Page) }
-                }
-            }
+            Button(
+                label = when (count) {
+                    0 -> "No projects match"
+                    1 -> "Show 1 project"
+                    else -> "Show $count projects"
+                },
+                onClick = onClose,
+                style = ButtonStyle.Primary,
+                fillWidth = true,
+                modifier = Modifier.widthIn(max = EagleMetrics.ContentMax),
+            )
         }
     }
 }
 
-/** Icon tabs across the top, the way a travel app groups homes: one per kind of project. */
+/** One facet: a label and a wrap of counted chips. Options with no matches stay visible but disabled. */
 @Composable
-private fun CategoryTabs(selected: Category?, onSelect: (Category?) -> Unit) {
-    val layout = LocalLayout.current
-    val tabs: List<Category?> = listOf(null) + Category.entries
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = layout.gutter - 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        items(tabs, key = { it?.name ?: "all" }) { category ->
-            val isSelected = category == selected
-            val color = if (isSelected) EagleColors.Ink else EagleColors.Muted
-            val shape = RoundedCornerShape(10.dp)
-            Column(
-                Modifier
-                    .focusRing(shape)
-                    .clip(shape)
-                    .selectable(
-                        selected = isSelected,
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        role = Role.Tab,
-                        onClick = { onSelect(category) },
-                    )
-                    .padding(horizontal = 6.dp)
-                    .padding(top = 6.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Icon(category?.glyph ?: Glyph.All, tint = color, size = 24.dp)
-                Spacer(Modifier.height(6.dp))
-                EText(category?.label ?: "All", size = 12.sp, weight = FontWeight.SemiBold, color = color, maxLines = 1)
-                Spacer(Modifier.height(10.dp))
-                Box(
-                    Modifier
-                        .height(2.dp)
-                        .width(if (isSelected) 36.dp else 0.dp)
-                        .background(EagleColors.Ink),
-                )
-            }
+private fun <T> FacetSection(
+    title: String,
+    options: List<T>,
+    label: (T) -> String,
+    selected: Set<T>,
+    count: (T) -> Int,
+    onToggle: (T) -> Unit,
+) {
+    SectionLabel(title)
+    Spacer(Modifier.height(4.dp))
+    Wrap(spacing = 8.dp) {
+        options.forEach { option ->
+            val n = count(option)
+            FilterChip(
+                label = label(option),
+                selected = option in selected,
+                onClick = { onToggle(option) },
+                count = n,
+                enabled = n > 0 || option in selected,
+            )
         }
     }
-}
-
-@Composable
-private fun Summary(shown: List<Project>) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        EText(
-            text = "${shown.size} projects · ${compactPesos(shown.sumOf { it.budget })} in budgets",
-            modifier = Modifier.weight(1f),
-            size = 14.sp,
-            weight = FontWeight.SemiBold,
-            color = EagleColors.Body,
-        )
-        SampleBadge()
-    }
-}
-
-@Composable
-private fun NoResults(onClear: () -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 40.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(Glyph.Search, tint = EagleColors.Muted, size = 40.dp)
-        Spacer(Modifier.height(14.dp))
-        EText("No projects match", size = 18.sp, weight = FontWeight.SemiBold)
-        Spacer(Modifier.height(6.dp))
-        EText("Try another place or agency, or clear the filters.", size = 15.sp, color = EagleColors.Body)
-        Spacer(Modifier.height(18.dp))
-        ActionButton("Clear filters", onClick = onClear, style = ButtonStyle.Outline)
-    }
-}
-
-@Composable
-private fun FilterSheet(filters: Filters, onChange: (Filters) -> Unit, onClose: () -> Unit) {
-    val count = projects.count(filters::matches)
-    Column(Modifier.fillMaxSize().background(EagleColors.Page)) {
-        Row(
-            Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClose)
-                    .semantics { contentDescription = "Close filters" },
-                contentAlignment = Alignment.Center,
-            ) { Icon(Glyph.Close, size = 20.dp) }
-            EText("Filters", modifier = Modifier.weight(1f), size = 17.sp, weight = FontWeight.SemiBold, align = androidx.compose.ui.text.style.TextAlign.Center)
-            Spacer(Modifier.width(40.dp))
-        }
-        Divider(Modifier.fillMaxWidth())
-        Column(
-            Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
-        ) {
-            EText("Level of government", size = 20.sp, weight = FontWeight.SemiBold)
-            Spacer(Modifier.height(14.dp))
-            Wrap(spacing = 10.dp) {
-                Level.entries.forEach { level ->
-                    ChoiceChip(
-                        label = level.label,
-                        selected = level in filters.levels,
-                        onClick = {
-                            onChange(filters.copy(levels = if (level in filters.levels) filters.levels - level else filters.levels + level))
-                        },
-                    )
-                }
-            }
-            Spacer(Modifier.height(28.dp))
-            Divider(Modifier.fillMaxWidth())
-            Spacer(Modifier.height(28.dp))
-            EText("Status", size = 20.sp, weight = FontWeight.SemiBold)
-            Spacer(Modifier.height(14.dp))
-            Wrap(spacing = 10.dp) {
-                Status.entries.forEach { status ->
-                    ChoiceChip(
-                        label = status.label,
-                        selected = status in filters.statuses,
-                        onClick = {
-                            onChange(filters.copy(statuses = if (status in filters.statuses) filters.statuses - status else filters.statuses + status))
-                        },
-                    )
-                }
-            }
-        }
-        Divider(Modifier.fillMaxWidth())
-        Row(
-            Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextAction("Clear all", onClick = { onChange(filters.copy(levels = emptySet(), statuses = emptySet())) }, color = EagleColors.Ink)
-            Spacer(Modifier.weight(1f))
-            ActionButton(if (count == 1) "Show 1 project" else "Show $count projects", onClick = onClose)
-        }
-    }
+    Spacer(Modifier.height(20.dp))
 }

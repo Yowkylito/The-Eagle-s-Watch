@@ -5,31 +5,35 @@ data class Principle(val title: String, val body: String)
 val principles: List<Principle> = listOf(
     Principle(
         "Official records only",
-        "We connect public documents: budgets, audit reports, procurement awards and local disclosure postings.",
+        "Figures come from public documents: budgets, procurement awards, audit reports and local disclosure postings.",
     ),
     Principle(
-        "One trail, every level",
-        "Funds are linked from the national budget down to the barangay, so a single peso can be followed across offices.",
+        "Every figure is labelled",
+        "Each value says whether it was independently verified, reported by the agency, reported by a citizen, or is not available.",
     ),
     Principle(
-        "Receipts for every figure",
-        "Each number links back to the document it came from. Where a source is missing, we say so.",
+        "Status, work and money are separate",
+        "A project's status, its physical progress and the funds released are shown as three facts, never as one number.",
+    ),
+    Principle(
+        "Corrections are welcome",
+        "Every record has a way to report wrong or outdated information. Changes are listed in its revision history.",
     ),
 )
 
-val plannedSources: List<String> = listOf(
-    "General Appropriations Act",
-    "COA audit reports",
-    "PhilGEPS",
-    "LGU Full Disclosure",
-    "DBM budget documents",
-    "Open data portals",
+/** Public sources the project plans to connect, with their public portals. */
+val publicSources: List<DataSource> = listOf(
+    DataSource("General Appropriations Act and DBM budget documents", "https://www.dbm.gov.ph"),
+    DataSource("PhilGEPS procurement notices and awards", "https://www.philgeps.gov.ph"),
+    DataSource("Commission on Audit annual audit reports", "https://www.coa.gov.ph"),
+    DataSource("DILG Full Disclosure Policy Portal (LGU postings)", "https://fdpp.dilg.gov.ph"),
+    DataSource("DPWH project postings", "https://www.dpwh.gov.ph"),
+    DataSource("Open Data Philippines", "https://data.gov.ph"),
 )
 
 /** A rule of Philippine public finance, with the law that sets it. These are real, not sample data. */
 data class Fact(val text: String, val source: String)
 
-/** One is shown each day under "Alam mo ba?" so there is something new on every visit. */
 val facts: List<Fact> = listOf(
     Fact(
         "Barangays get 20% of the national tax share set aside for local governments. Provinces and cities get 23% each, municipalities 34%.",
@@ -66,14 +70,6 @@ val facts: List<Fact> = listOf(
     Fact(
         "The national budget becomes law each year as the General Appropriations Act.",
         "1987 Constitution, Art. VI, Sec. 25",
-    ),
-    Fact(
-        "The first ₱250,000 of a person's taxable income each year is not taxed.",
-        "TRAIN Law (RA 10963)",
-    ),
-    Fact(
-        "VAT is 12% of the price of most goods and services sold in the country.",
-        "National Internal Revenue Code, Sec. 106 and 108",
     ),
     Fact(
         "Government purchases must be posted on PhilGEPS, the public procurement portal.",

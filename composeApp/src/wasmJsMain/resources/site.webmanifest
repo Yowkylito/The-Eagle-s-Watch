@@ -1,7 +1,7 @@
 {
   "name": "The Eagle's Watch",
   "short_name": "Eagle's Watch",
-  "description": "Follow every peso. Government projects, budgets and updates, with citizen feedback.",
+  "description": "Follow every peso. Public infrastructure projects, contracts, progress and records.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#FFFFFF",

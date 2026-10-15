@@ -13,23 +13,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import ph.eagleswatch.content.Project
-import ph.eagleswatch.content.projectById
+import ph.eagleswatch.content.ReportPreset
+import ph.eagleswatch.data.LoadState
+import ph.eagleswatch.data.ProjectStore
+import ph.eagleswatch.data.SampleProjectRepository
 import ph.eagleswatch.nav.BottomNav
 import ph.eagleswatch.nav.Destination
 import ph.eagleswatch.nav.TopBar
 import ph.eagleswatch.screens.AboutScreen
-import ph.eagleswatch.screens.ArticleScreen
 import ph.eagleswatch.screens.ExploreScreen
+import ph.eagleswatch.screens.PageBar
 import ph.eagleswatch.screens.ProjectScreen
 import ph.eagleswatch.screens.ReportScreen
 import ph.eagleswatch.screens.UpdatesScreen
@@ -37,6 +41,9 @@ import ph.eagleswatch.screens.WatchlistScreen
 import ph.eagleswatch.state.CitizenState
 import ph.eagleswatch.state.PlatformBackHandler
 import ph.eagleswatch.ui.EagleColors
+import ph.eagleswatch.ui.EagleMetrics
+import ph.eagleswatch.ui.EmptyState
+import ph.eagleswatch.ui.Glyph
 import ph.eagleswatch.ui.Layout
 import ph.eagleswatch.ui.LocalFonts
 import ph.eagleswatch.ui.LocalLayout
@@ -45,14 +52,13 @@ import ph.eagleswatch.ui.rememberEagleFonts
 /** A page opened on top of the tabs. */
 private sealed interface Route {
     data class ProjectPage(val id: String) : Route
-    data class Article(val id: String) : Route
 
-    /** Report a problem; about a project when [projectId] is set. */
-    data class Report(val projectId: String?) : Route
+    /** Report a problem; about a project when [projectId] is set, pre-filled when [preset] is set. */
+    data class Report(val projectId: String?, val preset: ReportPreset?) : Route
 }
 
 /**
- * Four tabs (Explore, Watchlist, Updates, About), with project pages, articles and reports stacked on top.
+ * Four tabs (Explore, Watchlist, Updates, About), with project pages and reports stacked on top.
  * Phones navigate from a bottom bar; wide windows use tabs in the top bar.
  */
 @Composable
@@ -61,38 +67,49 @@ fun App() {
     CompositionLocalProvider(LocalFonts provides fonts) {
         BoxWithConstraints(Modifier.fillMaxSize().background(EagleColors.Page)) {
             val wide = maxWidth >= Layout.WideBreakpoint
-            val layout = remember(wide) { Layout(wide = wide, gutter = if (wide) 40.dp else 20.dp) }
+            val layout = remember(wide) { Layout(wide = wide, gutter = if (wide) EagleMetrics.WideGutter else EagleMetrics.PhoneGutter) }
 
             var destination by remember { mutableStateOf(Destination.Explore) }
             val stack = remember { mutableStateListOf<Route>() }
             val citizen = remember { CitizenState() }
+            val store = remember { ProjectStore(SampleProjectRepository) }
+            LaunchedEffect(store.attempt) { store.load() }
+
             val openProject: (Project) -> Unit = { stack.add(Route.ProjectPage(it.id)) }
             val back: () -> Unit = { stack.removeLastOrNull() }
-            val report: (String?) -> Unit = { stack.add(Route.Report(it)) }
+            val report: (String?, ReportPreset?) -> Unit = { id, preset -> stack.add(Route.Report(id, preset)) }
             PlatformBackHandler(enabled = stack.isNotEmpty(), onBack = back)
+            val sample = (store.state as? LoadState.Ready)?.dataset?.sample == true
 
             CompositionLocalProvider(LocalLayout provides layout) {
                 Box(Modifier.fillMaxSize()) {
                     Column(Modifier.fillMaxSize()) {
-                        if (wide) TopBar(current = destination, onSelect = { destination = it }, onReport = { report(null) })
+                        if (wide) TopBar(current = destination, onSelect = { destination = it }, onReport = { report(null, null) }, sample = sample)
                         Crossfade(
                             targetState = destination,
                             modifier = Modifier.weight(1f),
-                            animationSpec = tween(180),
+                            animationSpec = tween(160),
                             label = "tab",
                         ) { shown ->
                             when (shown) {
-                                Destination.Explore -> ExploreScreen(citizen, onOpen = openProject)
+                                Destination.Explore -> ExploreScreen(
+                                    store = store,
+                                    citizen = citizen,
+                                    onOpen = openProject,
+                                    onReport = { report(null, null) },
+                                    onAbout = { destination = Destination.About },
+                                )
                                 Destination.Watchlist -> WatchlistScreen(
-                                    citizen,
+                                    store = store,
+                                    citizen = citizen,
                                     onOpen = openProject,
                                     onExplore = { destination = Destination.Explore },
                                 )
-                                Destination.Updates -> UpdatesScreen(citizen, onOpen = openProject)
-                                Destination.About -> AboutScreen(citizen)
+                                Destination.Updates -> UpdatesScreen(store = store, citizen = citizen, onOpen = openProject)
+                                Destination.About -> AboutScreen(citizen = citizen, onReport = { report(null, null) })
                             }
                         }
-                        if (!wide) BottomNav(current = destination, onSelect = { destination = it }, onReport = { report(null) })
+                        if (!wide) BottomNav(current = destination, onSelect = { destination = it })
                     }
 
                     // Pages slide in from the right as they open and back out as they close.
@@ -100,27 +117,32 @@ fun App() {
                         targetState = stack.size to stack.lastOrNull(),
                         transitionSpec = {
                             if (targetState.first > initialState.first) {
-                                slideInHorizontally(tween(260)) { it } togetherWith fadeOut(tween(260))
+                                slideInHorizontally(tween(220)) { it } togetherWith fadeOut(tween(220))
                             } else {
-                                fadeIn(tween(200)) togetherWith slideOutHorizontally(tween(240)) { it }
+                                fadeIn(tween(160)) togetherWith slideOutHorizontally(tween(200)) { it }
                             }
                         },
                         label = "page",
                     ) { (_, route) ->
                         when (route) {
                             null -> Box(Modifier)
-                            is Route.ProjectPage -> projectById(route.id)?.let { project ->
-                                ProjectScreen(
-                                    project = project,
-                                    citizen = citizen,
-                                    onBack = back,
-                                    onArticle = { stack.add(Route.Article(project.id)) },
-                                    onReport = { report(project.id) },
-                                )
+                            is Route.ProjectPage -> {
+                                val project = store.byId(route.id)
+                                if (project != null) {
+                                    ProjectScreen(
+                                        project = project,
+                                        citizen = citizen,
+                                        onBack = back,
+                                        onReport = { preset -> report(project.id, preset) },
+                                    )
+                                } else {
+                                    MissingProject(onBack = back)
+                                }
                             }
-                            is Route.Article -> projectById(route.id)?.let { ArticleScreen(it, onBack = back) }
                             is Route.Report -> ReportScreen(
-                                projectId = route.projectId,
+                                project = route.projectId?.let { store.byId(it) },
+                                projects = store.projects,
+                                preset = route.preset,
                                 onSubmit = citizen::addReport,
                                 onClose = back,
                             )
@@ -129,5 +151,21 @@ fun App() {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MissingProject(onBack: () -> Unit) {
+    val layout = LocalLayout.current
+    Column(Modifier.fillMaxSize().background(EagleColors.Page)) {
+        PageBar(onBack = onBack, title = "Project")
+        EmptyState(
+            glyph = Glyph.Alert,
+            title = "This record is not available",
+            body = "It may have been removed from the dataset, or the records have not finished loading.",
+            modifier = Modifier.padding(horizontal = layout.gutter),
+            actionLabel = "Back to the list",
+            onAction = onBack,
+        )
     }
 }

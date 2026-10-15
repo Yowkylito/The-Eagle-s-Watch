@@ -7,6 +7,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -14,7 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import ph.eagleswatch.resources.Res
@@ -24,36 +28,77 @@ import ph.eagleswatch.resources.inter_regular
 import ph.eagleswatch.resources.inter_semibold
 
 /**
- * White pages and photo-first cards, with the flag's blue as the one action colour.
- * Gold marks citizen approval and the eagle's watch; red appears only on the "Sample data" badge.
+ * Colour tokens. White pages, hairline separators, ink text. The flag's blue is the one action colour:
+ * links, primary buttons, the selected tab. Status colours always travel with a glyph and a label, never
+ * alone. Gold appears only in the brand mark.
+ *
+ * Every text colour here reads at 4.5:1 or better on [Page] and on its paired soft background.
  */
 object EagleColors {
-    /** Flag blue: buttons, links, the selected tab. */
-    val Blue = Color(0xFF1440C2)
-    val BlueDeep = Color(0xFF0E2F96)
-    val BlueSoft = Color(0xFFE4E9FB)
-
     val Page = Color(0xFFFFFFFF)
 
-    /** Quiet panels and placeholders on the white page. */
-    val Surface = Color(0xFFF4F5F9)
-    val Card = Color(0xFFFFFFFF)
-    val Ink = Color(0xFF0F1938)
-    val Body = Color(0xFF454E6A)
-    val Muted = Color(0xFF626A87)
-    val Line = Color(0xFFDDE1EE)
+    /** Quiet panels: notices, skeletons, the pressed state of a row. */
+    val Surface = Color(0xFFF3F4F8)
+    val SurfaceStrong = Color(0xFFE7E9F0)
 
-    val Red = Color(0xFFC8243F)
-    val RedSoft = Color(0xFFFBE7EA)
+    /** Hairlines between rows, and the stronger line around inputs. */
+    val Line = Color(0xFFD9DDE6)
+    val LineStrong = Color(0xFFB2B9C9)
+
+    val Ink = Color(0xFF111A33)
+    val Body = Color(0xFF3C4560)
+    val Muted = Color(0xFF5D667F)
+
+    val Blue = Color(0xFF1440C2)
+    val BlueDeep = Color(0xFF0E2F96)
+    val BlueSoft = Color(0xFFE6EBFA)
+
     val Gold = Color(0xFFF4B41A)
-    val GoldDeep = Color(0xFFB77D00)
-    val GoldSoft = Color(0xFFFFF3D3)
 
-    /** Project status colours: text on its soft background. */
-    val Green = Color(0xFF13795F)
-    val GreenSoft = Color(0xFFE0F3EC)
-    val Amber = Color(0xFF9A4B00)
-    val AmberSoft = Color(0xFFFDEBD3)
+    val Red = Color(0xFFB4213A)
+    val RedSoft = Color(0xFFFBE9EC)
+    val Green = Color(0xFF14704F)
+    val GreenSoft = Color(0xFFE1F2EA)
+    val Amber = Color(0xFF8A4300)
+    val AmberSoft = Color(0xFFFCEBD6)
+
+    /** Behind sheets and dialogs. */
+    val Scrim = Color(0x73000000)
+}
+
+/** The type scale. Sizes are in sp; nothing a citizen reads is smaller than [Caption]. */
+object EagleType {
+    /** Page titles, in Barlow Condensed. */
+    val Display: TextUnit = 26.sp
+
+    /** Large figures such as a contract amount, in Barlow Condensed. */
+    val Figure: TextUnit = 22.sp
+
+    /** Row and section titles. */
+    val Title: TextUnit = 17.sp
+    val Body: TextUnit = 15.sp
+    val Secondary: TextUnit = 14.sp
+
+    /** Section labels and tags. */
+    val Label: TextUnit = 13.sp
+    val Caption: TextUnit = 12.sp
+}
+
+/** Spacing and shape tokens on a 4dp grid. */
+object EagleMetrics {
+    val Radius: Dp = 4.dp
+    val RadiusSmall: Dp = 3.dp
+
+    /** Minimum size of anything tappable. */
+    val Touch: Dp = 44.dp
+
+    /** Horizontal page padding on phones; wide windows use [Layout.gutter]. */
+    val PhoneGutter: Dp = 16.dp
+    val WideGutter: Dp = 32.dp
+
+    /** The widest a column of text or a list is allowed to be. */
+    val ContentMax: Dp = 720.dp
+    val ReadingMax: Dp = 600.dp
 }
 
 @Immutable
@@ -76,14 +121,15 @@ fun rememberEagleFonts(): EagleFonts {
 }
 
 /**
- * Text in the house fonts: Barlow Condensed for [display] headlines and labels that need to be narrow,
- * Inter for everything else. Display text defaults to bold, body text to regular.
+ * Text in the house fonts: Barlow Condensed for [display] titles and figures, Inter for everything else.
+ * [tabular] switches on tabular numerals so columns of figures line up. [heading] marks the text as a
+ * heading for screen readers.
  */
 @Composable
 fun EText(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
-    size: TextUnit = 16.sp,
+    size: TextUnit = EagleType.Body,
     color: Color = EagleColors.Ink,
     weight: FontWeight? = null,
     display: Boolean = false,
@@ -93,11 +139,13 @@ fun EText(
     maxLines: Int = Int.MAX_VALUE,
     decoration: TextDecoration? = null,
     ellipsis: Boolean = false,
+    tabular: Boolean = false,
+    heading: Boolean = false,
 ) {
     val fonts = LocalFonts.current
     BasicText(
         text = text,
-        modifier = modifier,
+        modifier = if (heading) modifier.semantics { heading() } else modifier,
         maxLines = maxLines,
         overflow = if (ellipsis) TextOverflow.Ellipsis else TextOverflow.Clip,
         style = TextStyle(
@@ -105,6 +153,7 @@ fun EText(
             fontSize = size,
             fontWeight = weight ?: if (display) FontWeight.Bold else FontWeight.Normal,
             fontFamily = if (display) fonts.display else fonts.sans,
+            fontFeatureSettings = if (tabular) "tnum" else null,
             lineHeight = lineHeight,
             letterSpacing = letterSpacing,
             textAlign = align,
@@ -117,7 +166,7 @@ fun EText(
 fun EText(
     text: String,
     modifier: Modifier = Modifier,
-    size: TextUnit = 16.sp,
+    size: TextUnit = EagleType.Body,
     color: Color = EagleColors.Ink,
     weight: FontWeight? = null,
     display: Boolean = false,
@@ -127,6 +176,11 @@ fun EText(
     maxLines: Int = Int.MAX_VALUE,
     decoration: TextDecoration? = null,
     ellipsis: Boolean = false,
+    tabular: Boolean = false,
+    heading: Boolean = false,
 ) {
-    EText(AnnotatedString(text), modifier, size, color, weight, display, lineHeight, letterSpacing, align, maxLines, decoration, ellipsis)
+    EText(
+        AnnotatedString(text), modifier, size, color, weight, display, lineHeight, letterSpacing, align, maxLines,
+        decoration, ellipsis, tabular, heading,
+    )
 }
