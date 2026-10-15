@@ -3,7 +3,7 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [main, ccr-265da269-vexky1, ccr-c56771b4-rfzny1]
+    branches: [main, ccr-265da269-vexky1, ccr-c56771b4-rfzny1, ccr-5d1dcef7-r4a5zw, ccr-19f68f74-x8w84c]
     paths-ignore: ["**.md", "docs/**", "licenses/**"]
 
 concurrency:
@@ -45,7 +45,7 @@ jobs:
             --target "${{ github.sha }}" \
             --prerelease \
             --title "The Eagle's Watch ${{ steps.apk.outputs.tag }}" \
-            --notes "Design preview of the landing page. Sample figures only, no live government data.
+            --notes "Design preview on a labelled sample dataset of ten fictional projects. No live government data.
 
           Debug-signed build for testing. To install, allow installs from unknown sources on your Android device (minSdk 24)."
 

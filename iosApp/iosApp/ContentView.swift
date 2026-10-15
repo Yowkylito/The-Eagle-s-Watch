@@ -14,8 +14,8 @@ struct ContentView: View {
     var body: some View {
         ComposeView()
             .ignoresSafeArea()
-            .background(Color(red: 20 / 255, green: 64 / 255, blue: 194 / 255))
-            // Light status-bar text over the flag-blue top bar.
+            .background(Color(red: 12 / 255, green: 43 / 255, blue: 43 / 255))
+            // Light status-bar text over the night-jade header bands.
             .preferredColorScheme(.dark)
     }
 }

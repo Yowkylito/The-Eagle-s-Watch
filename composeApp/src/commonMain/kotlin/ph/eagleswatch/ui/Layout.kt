@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.dp
 /**
  * Layout facts shared by every screen.
  *
- * @property wide true on tablet and desktop-width windows: top tabs and a two-column Trace screen.
+ * @property wide true on tablet and desktop-width windows: top tabs, two-column pages and a grid of rows.
  * Phones get a bottom navigation bar and a single column.
  * @property gutter horizontal page padding.
  */
@@ -20,4 +20,4 @@ class Layout(val wide: Boolean, val gutter: Dp) {
     }
 }
 
-val LocalLayout = staticCompositionLocalOf { Layout(wide = false, gutter = 20.dp) }
+val LocalLayout = staticCompositionLocalOf { Layout(wide = false, gutter = 16.dp) }
