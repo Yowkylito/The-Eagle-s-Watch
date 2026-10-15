@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
@@ -96,12 +97,15 @@ fun Modifier.aurora(): Modifier = drawBehind {
     drawRect(Brush.verticalGradient(listOf(Color(0xFF081633), Color(0xFF0E2550))))
     val w = size.width
     val h = size.height
-    val r1 = maxOf(w, h) * 0.75f
-    val c1 = Offset(w * 0.92f, h * 0.05f)
-    drawCircle(Brush.radialGradient(listOf(Color(0x663B6EF5), Color.Transparent), center = c1, radius = r1), radius = r1, center = c1)
-    val r2 = maxOf(w, h) * 0.55f
-    val c2 = Offset(w * 0.05f, h * 1.0f)
-    drawCircle(Brush.radialGradient(listOf(Color(0x1FF5B700), Color.Transparent), center = c2, radius = r2), radius = r2, center = c2)
+    // The lights are larger than the band; clip them so they never spill onto the canvas below.
+    clipRect {
+        val r1 = maxOf(w, h) * 0.75f
+        val c1 = Offset(w * 0.92f, h * 0.05f)
+        drawCircle(Brush.radialGradient(listOf(Color(0x663B6EF5), Color.Transparent), center = c1, radius = r1), radius = r1, center = c1)
+        val r2 = maxOf(w, h) * 0.55f
+        val c2 = Offset(w * 0.05f, h * 1.0f)
+        drawCircle(Brush.radialGradient(listOf(Color(0x1FF5B700), Color.Transparent), center = c2, radius = r2), radius = r2, center = c2)
+    }
 }
 
 /** The height of the floating tab bar itself, without its margins. */

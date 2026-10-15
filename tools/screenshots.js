@@ -72,8 +72,9 @@ async function shot(page, name) {
     await sleep(500);
     await page.mouse.click(150, 330); // A project card
     await shot(page, 'phone-05-project');
-    await sleep(800);
-    await page.mouse.click(252, 508); // The source badge beside reported progress
+    await sleep(1500);
+    await page.mouse.click(252, 500); // The source badge beside reported progress
+    await sleep(600);
     await shot(page, 'phone-06-source-sheet');
     await page.mouse.click(180, 120); // The scrim closes the sheet
     await sleep(800);
