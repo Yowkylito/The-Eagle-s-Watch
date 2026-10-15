@@ -17,7 +17,7 @@ function watch(page) {
   page.on('pageerror', (e) => console.log('page error:', e.message));
   page.on('console', (m) => {
     const t = m.text();
-    if (m.type() === 'error' || m.type() === 'warning' || t.includes('EW-DEBUG')) console.log('console ' + m.type() + ':', t);
+    if (m.type() === 'error' || m.type() === 'warning') console.log('console ' + m.type() + ':', t);
   });
 }
 
@@ -73,18 +73,13 @@ async function shot(page, name) {
     await sleep(800);
     await page.mouse.wheel(0, 380);
     await sleep(500);
-    console.log('ACTION open project card');
-    await page.mouse.click(150, 330); // A project card
-    await shot(page, 'phone-05-project');
+    await page.mouse.click(150, 440); // The first project card's title
     // CI renders in software, where backdrop blur makes each frame slow, so give the page and the sheet
     // several seconds to settle before acting on them.
     await sleep(3000);
-    // Diagnostics: a tap in the frosted page bar should toggle Watch and leave the page open.
-    console.log('ACTION tap watch at 303,28');
-    await page.mouse.click(303, 28); // Watch, in the page bar
-    await sleep(2500);
-    await shot(page, 'diag-a-watch-tapped');
-    console.log('ACTION tap badge at 252,500');
+    await page.mouse.click(303, 28); // Watch, in the frosted page bar
+    await sleep(1500);
+    await shot(page, 'phone-05-project');
     await page.mouse.click(252, 500); // The source badge beside reported progress
     await sleep(4000);
     await shot(page, 'phone-06-source-sheet');
