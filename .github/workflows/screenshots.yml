@@ -1,10 +1,14 @@
 name: Screenshots
 
 # Builds the web bundle, photographs every screen at phone and laptop widths, and commits the images to
-# docs/review on the branch it was run from. Run it by hand from the Actions tab when reviewing a design change.
+# docs/review on the branch it ran from. Runs on pushes to the branch listed below, and by hand from the
+# Actions tab once the workflow is on the default branch.
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ccr-19f68f74-x8w84c]
+    paths-ignore: ["docs/**", "**.md", "licenses/**"]
 
 concurrency:
   group: screenshots-${{ github.ref }}
