@@ -34,7 +34,7 @@ import ph.eagleswatch.ui.LocalLayout
 import ph.eagleswatch.ui.aurora
 
 /**
- * The navy band at the top of a tab, with its title. Every screen starts on navy, so the status bar always
+ * The dark band at the top of a tab, with its title. Every screen starts on a dark band, so the status bar always
  * sits on the same colour. Phones pad for the status bar; wide windows sit under the top bar.
  */
 @Composable
@@ -58,19 +58,19 @@ fun TabTitle(
                 .padding(top = if (layout.wide) 28.dp else 12.dp, bottom = 20.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = EagleMetrics.Touch)) {
-                EText(title, modifier = Modifier.weight(1f), display = true, size = EagleType.Display, lineHeight = 34.sp, color = EagleColors.OnNavy, heading = true)
+                EText(title, modifier = Modifier.weight(1f), display = true, size = EagleType.Display, lineHeight = 34.sp, color = EagleColors.OnNight, heading = true)
                 if (trailing != null) trailing()
             }
             if (subtitle != null) {
-                EText(subtitle, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNavyMuted)
+                EText(subtitle, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNightMuted)
             }
         }
     }
 }
 
 /**
- * The navy bar on a page opened over the tabs: back, an optional title, and actions on the right. Actions
- * should use [EagleColors.OnNavy] for their glyphs.
+ * The dark bar on a page opened over the tabs: back, an optional title, and actions on the right. Actions
+ * should use [EagleColors.OnNight] for their glyphs.
  */
 @Composable
 fun PageBar(
@@ -83,11 +83,11 @@ fun PageBar(
     transparent: Boolean = false,
     actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val content = EagleColors.OnNavy
+    val content = EagleColors.OnNight
     Row(
         modifier
             .fillMaxWidth()
-            .then(if (transparent) Modifier else Modifier.background(EagleColors.Navy))
+            .then(if (transparent) Modifier else Modifier.background(EagleColors.Night))
             .windowInsetsPadding(WindowInsets.statusBars)
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,

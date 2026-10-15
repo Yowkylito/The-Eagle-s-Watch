@@ -31,56 +31,70 @@ import ph.eagleswatch.resources.inter_tight_semibold
 /**
  * Colour tokens.
  *
- * A soft grey canvas with white cards, near-black ink, and one confident blue for actions. Headers that carry
- * the big numbers sit on a deep navy taken from the flag. Status colours always travel with a shape and a
- * label, never alone. Every text colour reads at 4.5:1 or better on the surface it is used on.
+ * Warm paper and warm ink, with one signature colour: jade, after the Philippine jade vine. Jade marks
+ * everything you can act on (buttons, links, the selected tab, focus) and nothing else. Header bands sit on a
+ * deep night jade lit by a coral sun, the same scene as the app icon.
+ *
+ * Status colours are kept clear of jade: blue for ongoing work, amber for delays, red for suspensions and a
+ * leaf green for completed work. They always travel with a shape and a label, never alone. Every text colour
+ * reads at 4.5:1 or better on the surface it is used on.
  */
 object EagleColors {
     /** Behind everything. Cards sit on it. */
-    val Canvas = Color(0xFFF2F4F7)
+    val Canvas = Color(0xFFF4F0E8)
 
     /** Cards, sheets, the bottom bar. */
-    val Page = Color(0xFFFFFFFF)
+    val Page = Color(0xFFFFFDF9)
 
     /** Fills inside a card: tracks, idle chips, icon tiles, skeletons. */
-    val Surface = Color(0xFFF2F4F7)
-    val SurfaceStrong = Color(0xFFE4E7EC)
+    val Surface = Color(0xFFF3EEE6)
+    val SurfaceStrong = Color(0xFFE6DFD3)
 
-    val Line = Color(0xFFE4E7EC)
-    val LineStrong = Color(0xFFCDD3DD)
+    val Line = Color(0xFFEAE4DA)
+    val LineStrong = Color(0xFFD5CCBE)
 
-    val Ink = Color(0xFF0B1220)
-    val Body = Color(0xFF344054)
-    val Muted = Color(0xFF5B6577)
+    val Ink = Color(0xFF1C1A16)
+    val Body = Color(0xFF46413A)
+    val Muted = Color(0xFF6B655C)
 
-    val Blue = Color(0xFF1D4ED8)
-    val BlueDeep = Color(0xFF1E40AF)
-    val BlueSoft = Color(0xFFE8EEFF)
+    /** Actions: buttons, links, the selected tab, focus rings. */
+    val Accent = Color(0xFF0B7368)
+    val AccentDeep = Color(0xFF09625A)
+    val AccentSoft = Color(0xFFDFF3EE)
+
+    /** Selected controls on the dark bands, with [Night] content on top. */
+    val AccentBright = Color(0xFF3DD3BF)
 
     /** Header bands that hold the headline figures. */
-    val Navy = Color(0xFF0A1A3A)
-    val NavyRaised = Color(0xFF16284D)
-    val OnNavy = Color(0xFFFFFFFF)
-    val OnNavyMuted = Color(0xFFB4BFD4)
+    val Night = Color(0xFF0C2B2B)
+    val OnNight = Color(0xFFFFFFFF)
+    val OnNightMuted = Color(0xFFB3CCC7)
 
-    /** The eagle's gold, for the brand mark only. */
+    /** The coral sun from the icon: the light on the dark bands and the sample-data tag. Never a status. */
+    val Sun = Color(0xFFFF7A59)
+
+    /** The flag's gold, for the flag mark only. */
     val Gold = Color(0xFFF5B700)
 
-    val Green = Color(0xFF067647)
-    val GreenSoft = Color(0xFFE5F6EC)
+    /** Ongoing work and progress figures. */
+    val Blue = Color(0xFF1D4ED8)
+    val BlueSoft = Color(0xFFE8EEFF)
+
+    val Green = Color(0xFF2B7A2B)
+    val GreenSoft = Color(0xFFE5F2E1)
     val Amber = Color(0xFFB54708)
     val AmberSoft = Color(0xFFFEF0E1)
     val Red = Color(0xFFB42318)
     val RedSoft = Color(0xFFFDECEA)
 
-    /** Bar and dot fills for each status: stronger than the text colours, readable on navy and on white. */
+    /** Bar and dot fills for each status: stronger than the text colours, readable on night and on paper. */
     val FillBlue = Color(0xFF3B6EF5)
     val FillAmber = Color(0xFFF59E0B)
     val FillRed = Color(0xFFEF4444)
-    val FillGreen = Color(0xFF16A34A)
-    val FillGrey = Color(0xFF98A2B3)
+    val FillGreen = Color(0xFF4CAF50)
+    val FillGrey = Color(0xFFA39D93)
 
-    val Scrim = Color(0x8C0B1220)
+    val Scrim = Color(0x8C1C1A16)
 }
 
 /** The type scale, in sp. Nothing a citizen reads is smaller than [Caption]. */

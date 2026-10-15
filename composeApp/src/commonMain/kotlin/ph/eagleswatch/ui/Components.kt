@@ -78,7 +78,7 @@ import ph.eagleswatch.content.Verification
  * Chain it directly before `clickable` / `selectable` so it observes that element's focus.
  */
 @Composable
-fun Modifier.focusRing(shape: Shape, color: Color = EagleColors.Blue): Modifier {
+fun Modifier.focusRing(shape: Shape, color: Color = EagleColors.Accent): Modifier {
     var focused by remember { mutableStateOf(false) }
     // Only for keyboard navigation: a tap or click also focuses on some platforms, and needs no ring.
     val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
@@ -234,7 +234,7 @@ enum class ButtonStyle { Primary, Secondary, Quiet, OnDark }
 
 /**
  * [ButtonStyle.Primary] is solid blue for the one main action on a screen, [ButtonStyle.Secondary] a grey
- * fill, [ButtonStyle.Quiet] a plain blue label, [ButtonStyle.OnDark] a translucent white fill on navy.
+ * fill, [ButtonStyle.Quiet] a plain jade label, [ButtonStyle.OnDark] a translucent white fill on the dark bands.
  */
 @Composable
 fun Button(
@@ -254,15 +254,15 @@ fun Button(
     val shape = RoundedCornerShape(EagleMetrics.Radius)
     val active = pressed || hovered
     val background = when (style) {
-        ButtonStyle.Primary -> if (!enabled) EagleColors.SurfaceStrong else if (active) EagleColors.BlueDeep else EagleColors.Blue
+        ButtonStyle.Primary -> if (!enabled) EagleColors.SurfaceStrong else if (active) EagleColors.AccentDeep else EagleColors.Accent
         ButtonStyle.Secondary -> if (active) EagleColors.SurfaceStrong else EagleColors.Surface
-        ButtonStyle.Quiet -> if (active) EagleColors.BlueSoft else Color.Transparent
+        ButtonStyle.Quiet -> if (active) EagleColors.AccentSoft else Color.Transparent
         ButtonStyle.OnDark -> Color.White.copy(alpha = if (active) 0.22f else 0.12f)
     }
     val content = when {
         !enabled -> EagleColors.Muted
         style == ButtonStyle.Primary || style == ButtonStyle.OnDark -> Color.White
-        style == ButtonStyle.Quiet -> EagleColors.Blue
+        style == ButtonStyle.Quiet -> EagleColors.Accent
         else -> EagleColors.Ink
     }
     Row(
@@ -292,7 +292,7 @@ fun Button(
 
 /**
  * A 48dp tap target around a glyph, with an accessible [description]. [toggled] makes it an on/off control;
- * [label] shows text beside the glyph; [filled] gives it a translucent backing for use on navy.
+ * [label] shows text beside the glyph; [filled] gives it a backing for use on the dark bands.
  */
 @Composable
 fun IconButton(
@@ -477,7 +477,7 @@ fun SampleTag(modifier: Modifier = Modifier, onDark: Boolean = false) {
         "Sample data",
         modifier,
         color = if (onDark) EagleColors.Ink else EagleColors.Amber,
-        background = if (onDark) EagleColors.Gold else EagleColors.AmberSoft,
+        background = if (onDark) EagleColors.Sun else EagleColors.AmberSoft,
         glyph = Glyph.Alert,
     )
 }
@@ -653,7 +653,7 @@ fun Notice(
             EText(text, size = EagleType.Label, lineHeight = 19.sp, color = EagleColors.Body)
             if (actionLabel != null && onAction != null) {
                 Box(Modifier.heightIn(min = 40.dp).tappable(onClick = onAction, tint = Color.Transparent), contentAlignment = Alignment.CenterStart) {
-                    EText("$actionLabel ›", size = EagleType.Label, weight = FontWeight.SemiBold, color = EagleColors.Blue)
+                    EText("$actionLabel ›", size = EagleType.Label, weight = FontWeight.SemiBold, color = EagleColors.Accent)
                 }
             }
         }
@@ -727,14 +727,14 @@ fun SearchField(
     val fonts = LocalFonts.current
     var focused by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(EagleMetrics.Radius)
-    val text = if (onDark) EagleColors.OnNavy else EagleColors.Ink
-    val hint = if (onDark) EagleColors.OnNavyMuted else EagleColors.Muted
+    val text = if (onDark) EagleColors.OnNight else EagleColors.Ink
+    val hint = if (onDark) EagleColors.OnNightMuted else EagleColors.Muted
     Row(
         modifier
             .fillMaxWidth()
             .heightIn(min = EagleMetrics.Touch)
             .then(if (onDark) Modifier.glass(shape, fill = if (focused) 0.16f else 0.10f, edge = 0.2f) else Modifier.clip(shape).background(EagleColors.Surface))
-            .then(if (focused && !onDark) Modifier.border(2.dp, EagleColors.Blue, shape) else Modifier)
+            .then(if (focused && !onDark) Modifier.border(2.dp, EagleColors.Accent, shape) else Modifier)
             .padding(start = 14.dp, end = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -748,7 +748,7 @@ fun SearchField(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 textStyle = TextStyle(fontFamily = fonts.sans, fontSize = EagleType.Body, color = text),
-                cursorBrush = SolidColor(if (onDark) EagleColors.OnNavy else EagleColors.Blue),
+                cursorBrush = SolidColor(if (onDark) EagleColors.OnNight else EagleColors.Accent),
                 modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused }.semantics { contentDescription = description },
             )
         }
@@ -782,7 +782,7 @@ fun TextInput(
                 .heightIn(min = minHeight)
                 .clip(shape)
                 .background(EagleColors.Surface)
-                .then(if (focused) Modifier.border(2.dp, EagleColors.Blue, shape) else Modifier)
+                .then(if (focused) Modifier.border(2.dp, EagleColors.Accent, shape) else Modifier)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart,
         ) {
@@ -794,19 +794,19 @@ fun TextInput(
                 onValueChange = { if (it.length <= maxLength) onValueChange(if (singleLine) it.replace("\n", " ") else it) },
                 singleLine = singleLine,
                 textStyle = TextStyle(fontFamily = fonts.sans, fontSize = EagleType.Body, lineHeight = 22.sp, color = EagleColors.Ink),
-                cursorBrush = SolidColor(EagleColors.Blue),
+                cursorBrush = SolidColor(EagleColors.Accent),
                 modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused }.semantics { contentDescription = label ?: placeholder },
             )
         }
     }
 }
 
-/** Where a chip sits: on a white card or sheet, or on a navy header. */
+/** Where a chip sits: on a white card or sheet, or on a dark header. */
 enum class ChipSurface { Light, Dark }
 
 /**
  * A filled choice chip. Multi-select by default ([Role.Checkbox]); pass [Role.RadioButton] for one-of-many.
- * Selected chips turn solid ink on light surfaces and solid white on navy. The visible chip is 36dp; the
+ * Selected chips turn solid ink on light surfaces and solid white on the dark bands. The visible chip is 36dp; the
  * tap target around it is 48dp.
  */
 @Composable
@@ -830,15 +830,15 @@ fun FilterChip(
         else -> EagleColors.Page
     }
     val content = when {
-        !enabled -> if (dark) EagleColors.OnNavyMuted.copy(alpha = 0.6f) else EagleColors.Muted
+        !enabled -> if (dark) EagleColors.OnNightMuted.copy(alpha = 0.6f) else EagleColors.Muted
         dark && selected -> EagleColors.Ink
-        dark -> EagleColors.OnNavy
+        dark -> EagleColors.OnNight
         selected -> EagleColors.Page
         else -> EagleColors.Ink
     }
     val countColor = when {
         dark && selected -> EagleColors.Muted
-        dark -> EagleColors.OnNavyMuted
+        dark -> EagleColors.OnNightMuted
         selected -> EagleColors.Page.copy(alpha = 0.75f)
         else -> EagleColors.Muted
     }
@@ -935,7 +935,7 @@ fun LinkRow(
     val row = if (onClick != null) base.tappable(onClick = onClick, tint = EagleColors.Surface) else base
     Row(modifier.then(row).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         if (glyph != null) {
-            IconTile(glyph, tint = if (onClick != null) EagleColors.Blue else EagleColors.Body, background = if (onClick != null) EagleColors.BlueSoft else EagleColors.Surface)
+            IconTile(glyph, tint = if (onClick != null) EagleColors.Accent else EagleColors.Body, background = if (onClick != null) EagleColors.AccentSoft else EagleColors.Surface)
             Spacer(Modifier.width(12.dp))
         }
         Column(Modifier.weight(1f)) {

@@ -121,7 +121,7 @@ fun ProjectScreen(
     val today = remember { Day.today() }
     val watching = citizen.isWatching(project.id)
 
-    // The page scrolls under a frosted navy bar, so cards blur behind it as they pass.
+    // The page scrolls under a frosted night jade bar, so cards blur behind it as they pass.
     val pageHaze = rememberHazeState()
     Box(Modifier.fillMaxSize().background(EagleColors.Canvas).consumeTouches()) {
         Column(Modifier.fillMaxSize().hazeSource(pageHaze).verticalScroll(rememberScrollState()).windowInsetsPadding(WindowInsets.navigationBars)) {
@@ -161,19 +161,19 @@ fun ProjectScreen(
         PageBar(
             onBack = onBack,
             transparent = true,
-            modifier = Modifier.hazeEffect(pageHaze, GlassStyles.Navy),
+            modifier = Modifier.hazeEffect(pageHaze, GlassStyles.Night),
             actions = {
-                IconButton(Glyph.Share, "Share this record", onClick = { shareText(project.title, shareSummary(project)) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
-                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, tint = EagleColors.OnNavy, iconSize = 20.dp)
+                IconButton(Glyph.Share, "Share this record", onClick = { shareText(project.title, shareSummary(project)) }, tint = EagleColors.OnNight, iconSize = 20.dp)
+                IconButton(Glyph.Flag, "Report a problem with this project", onClick = { onReport(null) }, tint = EagleColors.OnNight, iconSize = 20.dp)
                 IconButton(
                     glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
                     description = if (watching) "Stop watching this project" else "Watch this project",
                     onClick = { citizen.toggleWatch(project.id) },
-                    tint = EagleColors.OnNavy,
+                    tint = if (watching) EagleColors.Night else EagleColors.OnNight,
                     iconSize = 20.dp,
                     toggled = watching,
                     label = if (watching) "Watching" else "Watch",
-                    filled = if (watching) EagleColors.Blue else Color.White.copy(alpha = 0.12f),
+                    filled = if (watching) EagleColors.AccentBright else Color.White.copy(alpha = 0.12f),
                 )
                 Spacer(Modifier.width(4.dp))
             },
@@ -181,7 +181,7 @@ fun ProjectScreen(
     }
 }
 
-/** The navy band: status, title, place, and the three figures that matter most. */
+/** The dark band: status, title, place, and the three figures that matter most. */
 @Composable
 private fun Hero(project: Project, today: Day) {
     val layout = LocalLayout.current
@@ -206,17 +206,17 @@ private fun Hero(project: Project, today: Day) {
                     if (project.sample) SampleTag(onDark = true)
                 }
                 Spacer(Modifier.height(12.dp))
-                EText(project.title, display = true, size = 26.sp, lineHeight = 31.sp, color = EagleColors.OnNavy, heading = true)
+                EText(project.title, display = true, size = 26.sp, lineHeight = 31.sp, color = EagleColors.OnNight, heading = true)
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Glyph.Pin, tint = EagleColors.OnNavyMuted, size = 15.dp, weight = 2f)
+                    Icon(Glyph.Pin, tint = EagleColors.OnNightMuted, size = 15.dp, weight = 2f)
                     Spacer(Modifier.width(6.dp))
-                    EText(project.place.full, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNavyMuted)
+                    EText(project.place.full, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNightMuted)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(project.category.glyph, tint = EagleColors.OnNavyMuted, size = 15.dp, weight = 2f)
+                    Icon(project.category.glyph, tint = EagleColors.OnNightMuted, size = 15.dp, weight = 2f)
                     Spacer(Modifier.width(6.dp))
-                    EText("${project.category.label} · ${project.level.label} project", size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNavyMuted)
+                    EText("${project.category.label} · ${project.level.label} project", size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.OnNightMuted)
                 }
                 Spacer(Modifier.height(18.dp))
                 Column(
@@ -227,12 +227,12 @@ private fun Hero(project: Project, today: Day) {
                             project.contract.amount?.let { compactPesos(it) } ?: "—",
                             if (project.status == Status.Planned) "Proposed" else "Contract",
                             Modifier.weight(1.1f),
-                            valueColor = EagleColors.OnNavy,
-                            labelColor = EagleColors.OnNavyMuted,
+                            valueColor = EagleColors.OnNight,
+                            labelColor = EagleColors.OnNightMuted,
                             size = 22.sp,
                         )
-                        Stat(work?.let { percent(it) } ?: "—", "Work done", Modifier.weight(1f), valueColor = EagleColors.OnNavy, labelColor = EagleColors.OnNavyMuted, size = 22.sp)
-                        Stat(thirdValue, thirdLabel, Modifier.weight(1f), valueColor = EagleColors.OnNavy, labelColor = EagleColors.OnNavyMuted, size = 22.sp)
+                        Stat(work?.let { percent(it) } ?: "—", "Work done", Modifier.weight(1f), valueColor = EagleColors.OnNight, labelColor = EagleColors.OnNightMuted, size = 22.sp)
+                        Stat(thirdValue, thirdLabel, Modifier.weight(1f), valueColor = EagleColors.OnNight, labelColor = EagleColors.OnNightMuted, size = 22.sp)
                     }
                     if (project.status != Status.Planned) {
                         Spacer(Modifier.height(12.dp))
@@ -241,7 +241,7 @@ private fun Hero(project: Project, today: Day) {
                             color = project.status.fill,
                             time = if (project.status.active) elapsed else null,
                             track = Color.White.copy(alpha = 0.14f),
-                            marker = EagleColors.OnNavy,
+                            marker = EagleColors.OnNight,
                         )
                     }
                     if (signal != null) {

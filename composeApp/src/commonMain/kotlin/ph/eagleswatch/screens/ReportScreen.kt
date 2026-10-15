@@ -241,7 +241,7 @@ fun ReportScreen(
                     text = "${steps.indexOf(step) + 1} of ${steps.size}",
                     modifier = Modifier.padding(end = 12.dp),
                     size = EagleType.Secondary,
-                    color = EagleColors.OnNavyMuted,
+                    color = EagleColors.OnNightMuted,
                     tabular = true,
                 )
             },
@@ -253,7 +253,7 @@ fun ReportScreen(
                     Modifier
                         .weight(1f)
                         .height(3.dp)
-                        .background(if (i <= steps.indexOf(step)) EagleColors.Blue else EagleColors.SurfaceStrong),
+                        .background(if (i <= steps.indexOf(step)) EagleColors.Accent else EagleColors.SurfaceStrong),
                 )
             }
         }
@@ -345,13 +345,13 @@ private fun OptionCard(glyph: Glyph, title: String, subtitle: String, selected: 
     val shape = RoundedCornerShape(EagleMetrics.Radius)
     Column(
         modifier
-            .border(if (selected) 2.dp else 1.dp, if (selected) EagleColors.Blue else EagleColors.Line, shape)
+            .border(if (selected) 2.dp else 1.dp, if (selected) EagleColors.Accent else EagleColors.Line, shape)
             .clip(shape)
-            .background(if (selected) EagleColors.BlueSoft else EagleColors.Page)
+            .background(if (selected) EagleColors.AccentSoft else EagleColors.Page)
             .tappable(onClick = onClick, shape = shape, role = Role.RadioButton, selected = selected, tint = EagleColors.SurfaceStrong)
             .padding(14.dp),
     ) {
-        Icon(glyph, tint = if (selected) EagleColors.Blue else EagleColors.Ink, size = 24.dp)
+        Icon(glyph, tint = if (selected) EagleColors.Accent else EagleColors.Ink, size = 24.dp)
         Spacer(Modifier.height(10.dp))
         EText(title, size = EagleType.Body, lineHeight = 20.sp, weight = FontWeight.SemiBold)
         Spacer(Modifier.height(2.dp))
@@ -373,9 +373,9 @@ private fun OptionRow(
         Modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp)
-            .border(if (selected) 2.dp else 1.dp, if (selected) EagleColors.Blue else EagleColors.Line, shape)
+            .border(if (selected) 2.dp else 1.dp, if (selected) EagleColors.Accent else EagleColors.Line, shape)
             .clip(shape)
-            .background(if (selected) EagleColors.BlueSoft else EagleColors.Page)
+            .background(if (selected) EagleColors.AccentSoft else EagleColors.Page)
             .tappable(onClick = onClick, shape = shape, role = Role.RadioButton, selected = selected, tint = EagleColors.SurfaceStrong)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -388,7 +388,7 @@ private fun OptionRow(
         }
         if (selected) {
             Spacer(Modifier.width(8.dp))
-            Icon(Glyph.Check, tint = EagleColors.Blue, size = 20.dp, weight = 2.4f)
+            Icon(Glyph.Check, tint = EagleColors.Accent, size = 20.dp, weight = 2.4f)
         }
     }
 }
@@ -660,7 +660,7 @@ private fun Filed(report: Report, onDone: () -> Unit) {
             EText("Report saved", display = true, size = EagleType.Display, lineHeight = 30.sp, heading = true)
             Spacer(Modifier.height(10.dp))
             EText("Reference number", size = EagleType.Caption, color = EagleColors.Muted)
-            EText(report.reference, display = true, size = 30.sp, lineHeight = 34.sp, color = EagleColors.Blue, tabular = true)
+            EText(report.reference, display = true, size = 30.sp, lineHeight = 34.sp, color = EagleColors.Accent, tabular = true)
             Spacer(Modifier.height(16.dp))
             Notice(
                 title = "What happens next",

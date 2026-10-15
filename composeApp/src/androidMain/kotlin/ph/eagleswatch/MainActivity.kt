@@ -11,7 +11,7 @@ import ph.eagleswatch.state.initPrefs
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(
-            // Light icons: every screen starts with a navy band under the status bar.
+            // Light icons: every screen starts with a dark band under the status bar.
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
         )

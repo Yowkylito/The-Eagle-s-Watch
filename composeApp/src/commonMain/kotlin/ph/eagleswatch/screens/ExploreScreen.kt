@@ -295,7 +295,7 @@ fun ExploreScreen(
     }
 }
 
-/** The navy band: brand, the headline figure, the status distribution as a filter, and search. */
+/** The dark band: brand, the headline figure, the status distribution as a filter, and search. */
 @Composable
 private fun Hero(
     all: List<Project>,
@@ -324,15 +324,15 @@ private fun Hero(
                         Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
                             Image(painterResource(Res.drawable.eagle_logo), contentDescription = null, modifier = Modifier.size(28.dp).clip(RoundedCornerShape(8.dp)))
                             Spacer(Modifier.width(10.dp))
-                            EText("The Eagle's Watch", modifier = Modifier.weight(1f), display = true, size = 18.sp, weight = FontWeight.SemiBold, color = EagleColors.OnNavy, heading = true)
-                            IconButton(Glyph.Flag, "Report a problem", onClick = onReport, label = "Report", iconSize = 18.dp, tint = EagleColors.OnNavy, filled = Color.White.copy(alpha = 0.12f))
+                            EText("The Eagle's Watch", modifier = Modifier.weight(1f), display = true, size = 18.sp, weight = FontWeight.SemiBold, color = EagleColors.OnNight, heading = true)
+                            IconButton(Glyph.Flag, "Report a problem", onClick = onReport, label = "Report", iconSize = 18.dp, tint = EagleColors.OnNight, filled = Color.White.copy(alpha = 0.12f))
                         }
                     }
                     Spacer(Modifier.height(if (layout.wide) 28.dp else 12.dp))
                     // The headline figure in a glass panel, like a widget on a home screen.
                     Column(Modifier.fillMaxWidth().glass(RoundedCornerShape(24.dp)).padding(18.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        EText("Approved contract value", size = EagleType.Label, weight = FontWeight.Medium, color = EagleColors.OnNavyMuted)
+                        EText("Approved contract value", size = EagleType.Label, weight = FontWeight.Medium, color = EagleColors.OnNightMuted)
                         if (dataset?.sample == true) {
                             Spacer(Modifier.width(8.dp))
                             SampleTag(onDark = true)
@@ -344,7 +344,7 @@ private fun Hero(
                         display = true,
                         size = EagleType.Hero,
                         lineHeight = 46.sp,
-                        color = EagleColors.OnNavy,
+                        color = EagleColors.OnNight,
                         tabular = true,
                     )
                     EText(
@@ -355,11 +355,11 @@ private fun Hero(
                         },
                         size = EagleType.Secondary,
                         lineHeight = 20.sp,
-                        color = EagleColors.OnNavyMuted,
+                        color = EagleColors.OnNightMuted,
                         tabular = true,
                     )
                     if (dataset != null) {
-                        EText("Data as of ${dataset.asOf.format()}", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.OnNavyMuted)
+                        EText("Data as of ${dataset.asOf.format()}", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.OnNightMuted)
                     }
                     if (all.isNotEmpty()) {
                         Spacer(Modifier.height(16.dp))
@@ -385,9 +385,9 @@ private fun Hero(
                         description = if (filters.sheetCount > 0) "More filters, ${filters.sheetCount} applied" else "More filters",
                         onClick = onOpenFilters,
                         label = if (filters.sheetCount > 0) "${filters.sheetCount}" else null,
-                        tint = EagleColors.OnNavy,
+                        tint = if (filters.sheetCount > 0) EagleColors.Night else EagleColors.OnNight,
                         iconSize = 20.dp,
-                        filled = if (filters.sheetCount > 0) EagleColors.Blue else Color.White.copy(alpha = 0.12f),
+                        filled = if (filters.sheetCount > 0) EagleColors.AccentBright else Color.White.copy(alpha = 0.12f),
                     )
                 }
             }

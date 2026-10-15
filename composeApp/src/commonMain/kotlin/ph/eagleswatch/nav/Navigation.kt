@@ -58,7 +58,7 @@ enum class Destination(val label: String, val glyph: Glyph, val selectedGlyph: G
     About("About", Glyph.Info),
 }
 
-/** Wide windows only: a navy bar with the brand, the tabs, the sample-data tag and Report. */
+/** Wide windows only: a dark bar with the brand, the tabs, the sample-data tag and Report. */
 @Composable
 fun TopBar(
     current: Destination,
@@ -72,7 +72,7 @@ fun TopBar(
         Row(Modifier.fillMaxWidth().height(60.dp).padding(horizontal = layout.gutter), verticalAlignment = Alignment.CenterVertically) {
             Image(painterResource(Res.drawable.eagle_logo), contentDescription = null, modifier = Modifier.size(28.dp).clip(RoundedCornerShape(8.dp)))
             Spacer(Modifier.width(10.dp))
-            EText("The Eagle's Watch", display = true, size = 19.sp, weight = FontWeight.SemiBold, color = EagleColors.OnNavy, heading = true)
+            EText("The Eagle's Watch", display = true, size = 19.sp, weight = FontWeight.SemiBold, color = EagleColors.OnNight, heading = true)
             Spacer(Modifier.width(32.dp))
             Destination.entries.forEach { destination ->
                 TopTab(destination, selected = destination == current) { onSelect(destination) }
@@ -83,7 +83,7 @@ fun TopBar(
                 SampleTag(onDark = true)
                 Spacer(Modifier.width(12.dp))
             }
-            IconButton(Glyph.Flag, "Report a problem", onClick = onReport, label = "Report", iconSize = 18.dp, tint = EagleColors.OnNavy, filled = Color.White.copy(alpha = 0.12f))
+            IconButton(Glyph.Flag, "Report a problem", onClick = onReport, label = "Report", iconSize = 18.dp, tint = EagleColors.OnNight, filled = Color.White.copy(alpha = 0.12f))
         }
     }
 }
@@ -104,7 +104,7 @@ private fun TopTab(destination: Destination, selected: Boolean, onClick: () -> U
             destination.label,
             size = EagleType.Body,
             weight = FontWeight.Medium,
-            color = if (selected) EagleColors.OnNavy else EagleColors.OnNavyMuted,
+            color = if (selected) EagleColors.OnNight else EagleColors.OnNightMuted,
         )
     }
 }
@@ -123,7 +123,7 @@ fun BottomNav(current: Destination, onSelect: (Destination) -> Unit, modifier: M
                 .widthIn(max = 460.dp)
                 .fillMaxWidth()
                 .height(TabBarHeight)
-                .shadow(elevation = 20.dp, shape = shape, ambientColor = Color(0x290B1220), spotColor = Color(0x290B1220))
+                .shadow(elevation = 20.dp, shape = shape, ambientColor = Color(0x291C1A16), spotColor = Color(0x291C1A16))
                 .clip(shape)
                 .then(if (haze != null) Modifier.hazeEffect(haze, GlassStyles.Light) else Modifier.background(Color.White.copy(alpha = 0.96f)))
                 .border(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.95f), Color.White.copy(alpha = 0.4f))), shape)
@@ -144,14 +144,14 @@ private fun NavTab(destination: Destination, selected: Boolean, modifier: Modifi
         modifier
             .fillMaxHeight()
             .clip(shape)
-            .background(if (selected) EagleColors.Blue.copy(alpha = 0.11f) else Color.Transparent)
-            .tappable(onClick = onClick, role = Role.Tab, selected = selected, tint = EagleColors.Blue.copy(alpha = 0.08f), shape = shape),
+            .background(if (selected) EagleColors.Accent.copy(alpha = 0.12f) else Color.Transparent)
+            .tappable(onClick = onClick, role = Role.Tab, selected = selected, tint = EagleColors.Accent.copy(alpha = 0.08f), shape = shape),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
             glyph = if (selected) destination.selectedGlyph else destination.glyph,
-            tint = if (selected) EagleColors.Blue else EagleColors.Body,
+            tint = if (selected) EagleColors.Accent else EagleColors.Body,
             size = 22.dp,
             weight = if (selected) 2.3f else 1.8f,
         )
@@ -160,7 +160,7 @@ private fun NavTab(destination: Destination, selected: Boolean, modifier: Modifi
             destination.label,
             size = EagleType.Caption,
             weight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-            color = if (selected) EagleColors.Blue else EagleColors.Body,
+            color = if (selected) EagleColors.Accent else EagleColors.Body,
             maxLines = 1,
         )
     }

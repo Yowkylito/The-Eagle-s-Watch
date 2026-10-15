@@ -202,10 +202,10 @@ fun App() {
                     }
                   }
 
-                    // Content scrolling under the status bar shows through frosted navy, so the light status
+                    // Content scrolling under the status bar shows through frosted night jade, so the light status
                     // icons always have a dark backing.
                     if (!wide && stack.isEmpty()) {
-                        Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).hazeEffect(haze, GlassStyles.Navy))
+                        Box(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).hazeEffect(haze, GlassStyles.Night))
                     }
 
                     AnimatedVisibility(

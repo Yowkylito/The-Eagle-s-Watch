@@ -78,7 +78,7 @@ fun Locator(
     modifier: Modifier = Modifier,
     land: Color = EagleColors.SurfaceStrong,
     outline: Color = EagleColors.LineStrong,
-    marker: Color = EagleColors.Blue,
+    marker: Color = EagleColors.Accent,
     description: String? = null,
 ) {
     val label = description ?: if (point != null) "Location marked on a map of the Philippines" else "Map of the Philippines, no location marked"

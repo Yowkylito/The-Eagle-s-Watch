@@ -131,7 +131,7 @@ fun ProjectCard(
                 description = if (watching) "Stop watching ${project.title}" else "Watch ${project.title}",
                 onClick = onToggleWatch,
                 modifier = Modifier.offset(x = 12.dp),
-                tint = if (watching) EagleColors.Blue else EagleColors.Muted,
+                tint = if (watching) EagleColors.Accent else EagleColors.Muted,
                 iconSize = 20.dp,
                 toggled = watching,
             )
