@@ -60,12 +60,15 @@ fun scheduleGap(project: Project, today: Day): Float? {
     return time - work
 }
 
-/** The one word that says how well the record is supported. */
-fun recordVerification(project: Project): Verification = when {
-    project.progress.independent?.attribution?.verification == Verification.Verified -> Verification.Verified
-    project.progress.independent != null -> project.progress.independent.attribution.verification
-    project.progress.reported != null -> project.progress.reported.attribution.verification
-    else -> project.descriptionAttribution.verification
+/** The one word that says how well the record is supported: the best check its progress figure has had. */
+fun recordVerification(project: Project): Verification {
+    val independent = project.progress.independent
+    val reported = project.progress.reported
+    return when {
+        independent != null -> independent.attribution.verification
+        reported != null -> reported.attribution.verification
+        else -> project.descriptionAttribution.verification
+    }
 }
 
 /**

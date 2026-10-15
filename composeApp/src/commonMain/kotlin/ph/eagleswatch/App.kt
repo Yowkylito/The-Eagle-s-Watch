@@ -47,6 +47,7 @@ import ph.eagleswatch.ui.Glyph
 import ph.eagleswatch.ui.Layout
 import ph.eagleswatch.ui.LocalFonts
 import ph.eagleswatch.ui.LocalLayout
+import ph.eagleswatch.ui.consumeTouches
 import ph.eagleswatch.ui.rememberEagleFonts
 
 /** A page opened on top of the tabs. */
@@ -157,7 +158,7 @@ fun App() {
 @Composable
 private fun MissingProject(onBack: () -> Unit) {
     val layout = LocalLayout.current
-    Column(Modifier.fillMaxSize().background(EagleColors.Page)) {
+    Column(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches()) {
         PageBar(onBack = onBack, title = "Project")
         EmptyState(
             glyph = Glyph.Alert,

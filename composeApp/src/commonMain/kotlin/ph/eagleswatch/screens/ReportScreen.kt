@@ -74,6 +74,7 @@ import ph.eagleswatch.ui.NoticeTone
 import ph.eagleswatch.ui.Tag
 import ph.eagleswatch.ui.TextInput
 import ph.eagleswatch.ui.Wrap
+import ph.eagleswatch.ui.consumeTouches
 import ph.eagleswatch.ui.glyph
 import ph.eagleswatch.ui.tappable
 
@@ -223,10 +224,10 @@ fun ReportScreen(
 
     val done = filed
     if (done != null) {
-        Box(Modifier.fillMaxSize().background(EagleColors.Page)) { Filed(done, onClose) }
+        Box(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches()) { Filed(done, onClose) }
         return
     }
-    Column(Modifier.fillMaxSize().background(EagleColors.Page).imePadding()) {
+    Column(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches().imePadding()) {
         val steps = draft.steps
         val step = steps[index.coerceIn(0, steps.lastIndex)]
 

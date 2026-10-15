@@ -61,6 +61,7 @@ import ph.eagleswatch.ui.SectionLabel
 import ph.eagleswatch.ui.StatusTag
 import ph.eagleswatch.ui.VerificationTag
 import ph.eagleswatch.ui.compactPesos
+import ph.eagleswatch.ui.consumeTouches
 import ph.eagleswatch.ui.days
 import ph.eagleswatch.ui.fixed
 import ph.eagleswatch.ui.formatCoordinates
@@ -103,7 +104,7 @@ fun ProjectScreen(
     val today = remember { Day.today() }
     val watching = citizen.isWatching(project.id)
 
-    Column(Modifier.fillMaxSize().background(EagleColors.Page)) {
+    Column(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches()) {
         PageBar(
             onBack = onBack,
             actions = {

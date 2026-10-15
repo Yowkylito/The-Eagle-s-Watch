@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -46,6 +47,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.platform.LocalInputModeManager
@@ -136,6 +138,12 @@ fun Modifier.tappable(
         .then(interaction)
         .then(labelled)
 }
+
+/**
+ * Keeps touches on a page drawn over other content from reaching what is underneath. Put it on the root of
+ * every full-screen page and sheet; without it a tap on an empty part of the page falls through.
+ */
+fun Modifier.consumeTouches(): Modifier = pointerInput(Unit) { detectTapGestures { } }
 
 /* ---------------------------------------------------------------- Buttons */
 

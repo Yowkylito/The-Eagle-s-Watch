@@ -84,6 +84,7 @@ import ph.eagleswatch.ui.SectionLabel
 import ph.eagleswatch.ui.SkeletonRows
 import ph.eagleswatch.ui.Wrap
 import ph.eagleswatch.ui.compactPesos
+import ph.eagleswatch.ui.consumeTouches
 import ph.eagleswatch.ui.hairlineBelow
 
 /** Approved contract amount bands for the filter. */
@@ -486,7 +487,7 @@ private fun Summary(
 private fun FilterSheet(all: List<Project>, filters: Filters, onChange: (Filters) -> Unit, onClose: () -> Unit) {
     val layout = LocalLayout.current
     val count = all.count(filters::matches)
-    Column(Modifier.fillMaxSize().background(EagleColors.Page)) {
+    Column(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches()) {
         PageBar(
             onBack = onClose,
             title = "Filters",
