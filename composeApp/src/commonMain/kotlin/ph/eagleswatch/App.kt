@@ -33,8 +33,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -164,16 +162,11 @@ fun App() {
                         }
                     }
 
-                    // Pages slide in from the right as they open and back out as they close.
+                    // Pages cross-fade in place. A horizontal slide left touch targets offset from where the
+                    // page was drawn when rendering under the blur layer, so pages do not move as they open.
                     AnimatedContent(
                         targetState = stack.size to stack.lastOrNull(),
-                        transitionSpec = {
-                            if (targetState.first > initialState.first) {
-                                slideInHorizontally(tween(220)) { it } togetherWith fadeOut(tween(220))
-                            } else {
-                                fadeIn(tween(160)) togetherWith slideOutHorizontally(tween(200)) { it }
-                            }
-                        },
+                        transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(140)) },
                         label = "page",
                     ) { (_, route) ->
                         when (route) {

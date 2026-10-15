@@ -75,15 +75,10 @@ async function shot(page, name) {
     // CI renders in software, where backdrop blur makes each frame slow, so give the page and the sheet
     // several seconds to settle before acting on them.
     await sleep(3000);
-    // Diagnostics: one tap in the frosted page bar, one on a button in the scrolling content.
+    // Diagnostics: a tap in the frosted page bar should toggle Watch and leave the page open.
     await page.mouse.click(303, 28); // Watch, in the page bar
     await sleep(2500);
     await shot(page, 'diag-a-watch-tapped');
-    await page.mouse.click(161, 707); // "Report what you see at the site", in the content
-    await sleep(2500);
-    await shot(page, 'diag-b-content-button');
-    await page.mouse.click(28, 28); // Close the report flow if it opened
-    await sleep(2500);
     await page.mouse.click(252, 500); // The source badge beside reported progress
     await sleep(4000);
     await shot(page, 'phone-06-source-sheet');
