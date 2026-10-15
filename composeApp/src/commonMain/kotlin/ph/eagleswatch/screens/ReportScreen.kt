@@ -227,7 +227,7 @@ fun ReportScreen(
         Box(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches()) { Filed(done, onClose) }
         return
     }
-    Column(Modifier.fillMaxSize().background(EagleColors.Page).consumeTouches().imePadding()) {
+    Column(Modifier.fillMaxSize().background(EagleColors.Canvas).consumeTouches().imePadding()) {
         val steps = draft.steps
         val step = steps[index.coerceIn(0, steps.lastIndex)]
 
@@ -291,6 +291,7 @@ fun ReportScreen(
         Row(
             Modifier
                 .fillMaxWidth()
+                .background(EagleColors.Page)
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(horizontal = layout.gutter, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,

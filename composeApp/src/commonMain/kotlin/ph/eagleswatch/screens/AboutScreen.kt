@@ -59,7 +59,7 @@ fun AboutScreen(citizen: CitizenState, onReport: () -> Unit, modifier: Modifier 
     Column(modifier.fillMaxSize().background(EagleColors.Canvas).verticalScroll(rememberScrollState())) {
         TabTitle("About")
         ContentColumn(max = EagleMetrics.ReadingMax) {
-            Column(Modifier.padding(horizontal = layout.gutter), verticalArrangement = Arrangement.spacedBy(EagleMetrics.CardGap)) {
+            Column(Modifier.padding(horizontal = layout.gutter).padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(EagleMetrics.CardGap)) {
                 Card {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(painterResource(Res.drawable.eagle_logo), contentDescription = null, modifier = Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)))

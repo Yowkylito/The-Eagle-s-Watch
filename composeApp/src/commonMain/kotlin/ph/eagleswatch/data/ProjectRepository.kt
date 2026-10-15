@@ -41,7 +41,7 @@ object SampleProjectRepository : ProjectRepository {
         projects = sampleProjects,
         asOf = SAMPLE_AS_OF,
         sample = true,
-        note = "Ten fictional records for design and testing. They do not describe real projects, contracts or people.",
+        note = "Ten fictional records for design and testing. Not real projects, contracts or people.",
     )
 }
 

@@ -494,7 +494,7 @@ val LocalSourceSheet = staticCompositionLocalOf<(SourceInfo) -> Unit> { {} }
  * and what the label means, so the details are one tap away instead of printed under every number.
  */
 @Composable
-fun SourceBadge(figure: String, attribution: Attribution, modifier: Modifier = Modifier) {
+fun SourceBadge(figure: String, attribution: Attribution, modifier: Modifier = Modifier, quiet: Boolean = false) {
     val open = LocalSourceSheet.current
     val v = attribution.verification
     val tone = v.tone
@@ -505,11 +505,21 @@ fun SourceBadge(figure: String, attribution: Attribution, modifier: Modifier = M
                 onClick = { open(SourceInfo(figure, attribution)) },
                 shape = RoundedCornerShape(EagleMetrics.RadiusSmall + 4.dp),
                 description = "${v.label}. Source of $figure",
-                tint = Color.Transparent,
+                tint = if (quiet) EagleColors.Surface else Color.Transparent,
             ),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.CenterStart,
     ) {
-        Tag(v.label, color = tone.color, background = tone.soft, glyph = v.glyph, trailingGlyph = Glyph.ChevronRight)
+        if (quiet) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+                Icon(v.glyph, tint = EagleColors.Muted, size = 13.dp, weight = 2.2f)
+                Spacer(Modifier.width(5.dp))
+                EText(attribution.source, size = EagleType.Caption, color = EagleColors.Muted, maxLines = 1, ellipsis = true, modifier = Modifier.widthIn(max = 240.dp))
+                Spacer(Modifier.width(2.dp))
+                Icon(Glyph.ChevronRight, tint = EagleColors.Muted, size = 12.dp, weight = 2.2f)
+            }
+        } else {
+            Tag(v.label, color = tone.color, background = tone.soft, glyph = v.glyph, trailingGlyph = Glyph.ChevronRight)
+        }
     }
 }
 
@@ -642,8 +652,9 @@ fun Notice(
             if (title != null) EText(title, size = EagleType.Secondary, weight = FontWeight.SemiBold, color = EagleColors.Ink, lineHeight = 20.sp)
             EText(text, size = EagleType.Label, lineHeight = 19.sp, color = EagleColors.Body)
             if (actionLabel != null && onAction != null) {
-                Spacer(Modifier.height(4.dp))
-                Button(actionLabel, onClick = onAction, style = ButtonStyle.Quiet, compact = true)
+                Box(Modifier.heightIn(min = 40.dp).tappable(onClick = onAction, tint = Color.Transparent), contentAlignment = Alignment.CenterStart) {
+                    EText("$actionLabel ›", size = EagleType.Label, weight = FontWeight.SemiBold, color = EagleColors.Blue)
+                }
             }
         }
     }
@@ -856,7 +867,7 @@ fun FilterChip(
                 leading()
                 Spacer(Modifier.width(7.dp))
             }
-            EText(label, modifier = Modifier.weight(1f, fill = false), size = EagleType.Secondary, weight = FontWeight.Medium, color = content, maxLines = 1, ellipsis = true)
+            EText(label, modifier = Modifier.widthIn(max = 260.dp), size = EagleType.Secondary, weight = FontWeight.Medium, color = content, maxLines = 1, ellipsis = true)
             if (count != null) {
                 Spacer(Modifier.width(6.dp))
                 EText(count.toString(), size = EagleType.Label, weight = FontWeight.Medium, color = countColor, tabular = true)

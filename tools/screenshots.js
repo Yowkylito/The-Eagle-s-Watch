@@ -72,12 +72,13 @@ async function shot(page, name) {
     await sleep(500);
     await page.mouse.click(150, 330); // A project card
     await shot(page, 'phone-05-project');
+    await sleep(800);
+    await page.mouse.click(252, 508); // The source badge beside reported progress
+    await shot(page, 'phone-06-source-sheet');
+    await page.mouse.click(180, 120); // The scrim closes the sheet
+    await sleep(800);
     await page.mouse.wheel(0, 650);
-    await shot(page, 'phone-06-project');
-    await page.mouse.click(300, 300); // A source badge, if one is under the pointer
-    await shot(page, 'phone-07-source-sheet');
-    await page.mouse.click(180, 120); // Scrim closes the sheet
-    await sleep(600);
+    await shot(page, 'phone-07-project');
     for (let i = 8; i <= 12; i++) {
       await page.mouse.wheel(0, 700);
       await shot(page, 'phone-' + String(i).padStart(2, '0') + '-project');

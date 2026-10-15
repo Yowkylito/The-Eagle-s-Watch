@@ -57,13 +57,13 @@ fun WatchlistScreen(
             },
         )
         when (state) {
-            LoadState.Loading -> ContentColumn { SkeletonRows(2, Modifier.padding(horizontal = layout.gutter)) }
+            LoadState.Loading -> ContentColumn { SkeletonRows(2, Modifier.padding(horizontal = layout.gutter).padding(top = 16.dp)) }
             is LoadState.Failed -> ContentColumn {
                 ErrorState("The records could not be loaded", state.message, onRetry = store::retry, modifier = Modifier.padding(horizontal = layout.gutter))
             }
             is LoadState.Ready -> if (watched.isEmpty()) {
                 ContentColumn {
-                    Card(Modifier.padding(horizontal = layout.gutter)) {
+                    Card(Modifier.padding(horizontal = layout.gutter).padding(top = 16.dp)) {
                         EmptyState(
                             glyph = Glyph.Eye,
                             title = "Nothing watched yet",
@@ -75,7 +75,7 @@ fun WatchlistScreen(
                     }
                 }
             } else {
-                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)) {
                     items(watched.chunked(columns), key = { row -> row.joinToString("|") { it.id } }) { row ->
                         ContentColumn(max = max) {
                             Row(

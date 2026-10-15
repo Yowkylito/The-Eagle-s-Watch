@@ -267,14 +267,14 @@ private fun ProgressCard(project: Project, today: Day, onReport: (ReportPreset?)
         CardHeader("Progress", subtitle = "Status, physical work and money are reported separately")
         Spacer(Modifier.height(14.dp))
         if (reported != null) {
-            Figure("Physical progress, as reported", "${reported.percent}%", reported.attribution) {
+            Figure("Reported progress", "${reported.percent}%", reported.attribution) {
                 WorkTrack(reported.percent / 100f, color = project.status.fill, time = if (active) elapsed else null)
                 if (active && elapsed != null) {
                     EText("The tick marks ${percent(elapsed)} of contract time used, as of ${today.format()}.", size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.Muted)
                 }
             }
         } else {
-            Figure("Physical progress, as reported", "Not on file", Attribution(Verification.Unavailable, "No progress report on file"), muted = true)
+            Figure("Reported progress", "Not on file", Attribution(Verification.Unavailable, "No progress report on file"), muted = true)
         }
         Spacer(Modifier.height(14.dp))
         Hairline()
@@ -349,7 +349,7 @@ private fun ContractCard(project: Project) {
     val c = project.contract
     val s = project.schedule
     Card {
-        CardHeader("Contract & schedule", trailing = { SourceBadge("Contract", c.attribution) })
+        CardHeader("Contract", trailing = { SourceBadge("Contract", c.attribution) })
         Spacer(Modifier.height(4.dp))
         KeyValueRow("Approved amount", c.amount?.let { formatPesos(it) }, note = c.reference?.let { "Ref. $it" })
         Hairline()
@@ -433,7 +433,7 @@ private fun TimelineCard(project: Project, today: Day) {
     var showAll by remember { mutableStateOf(false) }
     val shown = if (showAll || entries.size <= 5) entries else entries.take(5)
     Card {
-        CardHeader("Timeline", subtitle = "${entries.size} dated entries, newest first")
+        CardHeader("Timeline", subtitle = "${entries.size} dated entries, newest first. Tap a source to see it.")
         Spacer(Modifier.height(14.dp))
         shown.forEachIndexed { index, entry -> TimelineRow(entry, last = index == shown.lastIndex) }
         if (entries.size > 5) {
@@ -471,7 +471,7 @@ private fun TimelineRow(entry: TimelineEntry, last: Boolean) {
             Spacer(Modifier.height(2.dp))
             EText(entry.title, size = EagleType.Body, lineHeight = 21.sp, weight = FontWeight.SemiBold, color = if (entry.upcoming) EagleColors.Muted else EagleColors.Ink)
             if (entry.body != null) EText(entry.body, size = EagleType.Secondary, lineHeight = 20.sp, color = EagleColors.Body)
-            SourceBadge(entry.title, entry.attribution)
+            SourceBadge(entry.title, entry.attribution, quiet = entry.attribution.verification == Verification.AgencyReported)
         }
     }
 }

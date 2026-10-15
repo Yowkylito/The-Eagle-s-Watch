@@ -58,7 +58,7 @@ fun UpdatesScreen(store: ProjectStore, citizen: CitizenState, onOpen: (Project) 
     Column(modifier.fillMaxSize().background(EagleColors.Canvas)) {
         TabTitle("Updates", subtitle = "Dated entries from every record, with who reported each one")
         ContentColumn {
-            Row(Modifier.padding(horizontal = layout.gutter), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.padding(horizontal = layout.gutter).padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip("All projects", selected = !watchingOnly, onClick = { watchingOnly = false }, role = Role.RadioButton)
                 FilterChip("Watching", selected = watchingOnly, onClick = { watchingOnly = true }, role = Role.RadioButton, count = citizen.watched.size)
             }

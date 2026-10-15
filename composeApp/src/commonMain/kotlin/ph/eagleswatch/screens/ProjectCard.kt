@@ -197,7 +197,7 @@ fun ProjectCard(
             EText(
                 text = listOfNotNull(
                     "${project.documents.size} docs",
-                    reported?.let { "updated ${it.reportedOn.format()}" } ?: project.latestUpdate?.let { "updated ${it.date.format()}" },
+                    (reported?.reportedOn ?: project.latestUpdate?.date)?.format(),
                 ).joinToString(" · "),
                 modifier = Modifier.weight(1f).padding(end = 2.dp),
                 size = EagleType.Caption,

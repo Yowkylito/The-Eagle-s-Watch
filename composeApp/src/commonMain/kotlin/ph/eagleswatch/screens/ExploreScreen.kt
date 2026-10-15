@@ -206,7 +206,6 @@ fun ExploreScreen(
                         item(key = "sample") {
                             ContentColumn(max = if (layout.wide) 1200.dp else EagleMetrics.ContentMax) {
                                 Notice(
-                                    title = "You're viewing sample data",
                                     text = state.dataset.note,
                                     tone = NoticeTone.Sample,
                                     actionLabel = "How records are labelled",
