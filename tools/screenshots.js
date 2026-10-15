@@ -13,6 +13,26 @@ fs.mkdirSync(out, { recursive: true });
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function watch(page) {
+  page.on('pageerror', (e) => console.log('page error:', e.message));
+  page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') console.log('console ' + m.type() + ':', m.text()); });
+}
+
+// Says whether the Compose canvas exists and WebGL2 is available, so a blank capture can be explained.
+async function diagnose(page) {
+  const info = await page.evaluate(() => {
+    const canvas = document.querySelector('canvas');
+    const probe = document.createElement('canvas');
+    return {
+      canvas: canvas ? canvas.width + 'x' + canvas.height : 'none',
+      webgl2: !!probe.getContext('webgl2'),
+      language: navigator.language,
+      title: document.title,
+    };
+  });
+  console.log('diagnostics:', JSON.stringify(info));
+}
+
 async function shot(page, name) {
   await sleep(900);
   await page.screenshot({ path: path.join(out, name + '.png') });
@@ -20,17 +40,23 @@ async function shot(page, name) {
 }
 
 (async () => {
-  const launch = { args: ['--no-sandbox'] };
+  // Full Chromium in new headless mode, with software WebGL: the Compose canvas needs WebGL2, and the
+  // headless shell disables SwiftShader unless asked.
+  const launch = {
+    args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader', '--ignore-gpu-blocklist'],
+  };
   if (process.env.CHROMIUM_PATH) launch.executablePath = process.env.CHROMIUM_PATH;
+  else launch.channel = 'chromium';
   const browser = await chromium.launch(launch);
   try {
     // Phone: a 360 x 780 window, the most common Android size class.
-    const phone = await browser.newContext({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, hasTouch: true });
+    // An explicit locale: without one the Kotlin/Wasm runtime fails on "Incorrect locale information".
+    const phone = await browser.newContext({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 2, hasTouch: true, locale: 'en-PH' });
     const page = await phone.newPage();
-    page.on('pageerror', (e) => console.log('page error:', e.message));
-    page.on('console', (m) => { if (m.type() === 'error') console.log('console error:', m.text()); });
+    watch(page);
     await page.goto(url, { waitUntil: 'load' });
-    await sleep(10000); // Wasm boot and font loading.
+    await sleep(12000); // Wasm boot and font loading.
+    await diagnose(page);
     await shot(page, 'phone-01-explore');
     await page.mouse.wheel(0, 700);
     await shot(page, 'phone-02-explore-scrolled');
@@ -69,10 +95,12 @@ async function shot(page, name) {
     await phone.close();
 
     // Wide: a laptop window.
-    const wide = await browser.newContext({ viewport: { width: 1280, height: 860 }, deviceScaleFactor: 1 });
+    const wide = await browser.newContext({ viewport: { width: 1280, height: 860 }, deviceScaleFactor: 1, locale: 'en-PH' });
     const w = await wide.newPage();
+    watch(w);
     await w.goto(url, { waitUntil: 'load' });
-    await sleep(10000);
+    await sleep(12000);
+    await diagnose(w);
     await shot(w, 'wide-01-explore');
     await w.mouse.click(400, 460); // A project row
     await shot(w, 'wide-02-project');
