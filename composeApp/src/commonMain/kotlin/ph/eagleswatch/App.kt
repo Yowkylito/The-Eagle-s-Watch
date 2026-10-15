@@ -77,6 +77,7 @@ import ph.eagleswatch.ui.LocalSourceSheet
 import ph.eagleswatch.ui.SourceInfo
 import ph.eagleswatch.ui.SourceSheetContent
 import ph.eagleswatch.ui.consumeTouches
+import ph.eagleswatch.ui.debugTaps
 import ph.eagleswatch.ui.rememberEagleFonts
 
 /** A page opened on top of the tabs. */
@@ -106,7 +107,7 @@ fun App() {
             LaunchedEffect(store.attempt) { store.load() }
 
             val openProject: (Project) -> Unit = { stack.add(Route.ProjectPage(it.id)) }
-            val back: () -> Unit = { stack.removeLastOrNull() }
+            val back: () -> Unit = { println("EW-DEBUG back, stack=${stack.size}"); stack.removeLastOrNull() }
             val report: (String?, ReportPreset?) -> Unit = { id, preset -> stack.add(Route.Report(id, preset)) }
             PlatformBackHandler(enabled = stack.isNotEmpty(), onBack = back)
             val sample = (store.state as? LoadState.Ready)?.dataset?.sample == true
@@ -114,7 +115,7 @@ fun App() {
             // The source sheet: where a figure comes from, opened from any source badge.
             var sheetOpen by remember { mutableStateOf(false) }
             var sheetInfo by remember { mutableStateOf<SourceInfo?>(null) }
-            val openSource: (SourceInfo) -> Unit = remember { { info -> sheetInfo = info; sheetOpen = true } }
+            val openSource: (SourceInfo) -> Unit = remember { { info -> println("EW-DEBUG open source ${info.figure}"); sheetInfo = info; sheetOpen = true } }
             PlatformBackHandler(enabled = sheetOpen) { sheetOpen = false }
 
             // Glass: every tab and page draws into one blur source; the tab bar, the status-bar strip and the
@@ -132,7 +133,7 @@ fun App() {
                 LocalChrome provides chrome,
                 LocalBottomSpace provides bottomSpace,
             ) {
-                Box(Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxSize().debugTaps("root")) {
                   Box(Modifier.fillMaxSize().hazeSource(haze)) {
                     Column(Modifier.fillMaxSize()) {
                         if (wide) TopBar(current = destination, onSelect = { destination = it }, onReport = { report(null, null) }, sample = sample)

@@ -26,6 +26,7 @@ import dev.chrisbanes.haze.rememberHazeState
 import ph.eagleswatch.ui.GlassStyles
 import ph.eagleswatch.ui.aurora
 import ph.eagleswatch.ui.glass
+import ph.eagleswatch.ui.debugTaps
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -123,7 +124,7 @@ fun ProjectScreen(
 
     // The page scrolls under a frosted navy bar, so cards blur behind it as they pass.
     val pageHaze = rememberHazeState()
-    Box(Modifier.fillMaxSize().background(EagleColors.Canvas).consumeTouches()) {
+    Box(Modifier.fillMaxSize().background(EagleColors.Canvas).debugTaps("project").consumeTouches()) {
         Column(Modifier.fillMaxSize().hazeSource(pageHaze).verticalScroll(rememberScrollState()).windowInsetsPadding(WindowInsets.navigationBars)) {
             Hero(project, today)
             ContentColumn(max = if (layout.wide) 1120.dp else EagleMetrics.ContentMax) {
@@ -168,7 +169,7 @@ fun ProjectScreen(
                 IconButton(
                     glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
                     description = if (watching) "Stop watching this project" else "Watch this project",
-                    onClick = { citizen.toggleWatch(project.id) },
+                    onClick = { println("EW-DEBUG watch"); citizen.toggleWatch(project.id) },
                     tint = EagleColors.OnNavy,
                     iconSize = 20.dp,
                     toggled = watching,
