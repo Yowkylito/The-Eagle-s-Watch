@@ -92,34 +92,25 @@ fun ProjectRow(
             Modifier
                 .fillMaxWidth()
                 .tappable(onClick = onOpen, description = "Open ${project.title}")
-                .padding(start = layout.gutter, end = layout.gutter - 8.dp, top = 8.dp, bottom = 12.dp),
+                .padding(start = layout.gutter, end = layout.gutter - 8.dp, top = 10.dp, bottom = 12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                StatusTag(project.status, detail = reported?.let { "${it.percent}%" })
-                if (reported != null) {
-                    Spacer(Modifier.width(8.dp))
-                    EText(
-                        text = "reported ${reported.reportedOn.format()}",
-                        modifier = Modifier.weight(1f),
-                        size = EagleType.Caption,
-                        color = EagleColors.Muted,
-                        maxLines = 1,
-                        ellipsis = true,
-                    )
-                } else {
-                    Spacer(Modifier.weight(1f))
-                }
-                IconButton(
-                    glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
-                    description = if (watching) "Stop watching ${project.title}" else "Watch ${project.title}",
-                    onClick = onToggleWatch,
-                    tint = if (watching) EagleColors.Blue else EagleColors.Body,
-                    iconSize = 20.dp,
-                    toggled = watching,
-                )
-            }
-            Row(Modifier.padding(end = 8.dp), verticalAlignment = Alignment.Top) {
-                Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f).padding(top = 6.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        StatusTag(project.status, detail = reported?.let { "${it.percent}%" })
+                        if (reported != null) {
+                            Spacer(Modifier.width(8.dp))
+                            EText(
+                                text = "reported ${reported.reportedOn.format()}",
+                                modifier = Modifier.weight(1f),
+                                size = EagleType.Caption,
+                                color = EagleColors.Muted,
+                                maxLines = 1,
+                                ellipsis = true,
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(6.dp))
                     EText(
                         text = project.title,
                         size = EagleType.Title,
@@ -164,12 +155,24 @@ fun ProjectRow(
                     }
                     EText(scheduleSummary(project), size = EagleType.Caption, lineHeight = 17.sp, color = EagleColors.Muted, maxLines = 1, ellipsis = true)
                 }
-                Spacer(Modifier.width(12.dp))
-                Locator(
-                    point = project.place.coordinates,
-                    modifier = Modifier.width(40.dp).padding(top = 4.dp),
-                    description = if (project.place.coordinates != null) "Located in ${project.place.short}" else "Location not mapped",
-                )
+                Spacer(Modifier.width(8.dp))
+                // Right rail: the watch control on top, the locator under it.
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(
+                        glyph = if (watching) Glyph.EyeFilled else Glyph.Eye,
+                        description = if (watching) "Stop watching ${project.title}" else "Watch ${project.title}",
+                        onClick = onToggleWatch,
+                        tint = if (watching) EagleColors.Blue else EagleColors.Body,
+                        iconSize = 20.dp,
+                        toggled = watching,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Locator(
+                        point = project.place.coordinates,
+                        modifier = Modifier.width(36.dp),
+                        description = if (project.place.coordinates != null) "Located in ${project.place.short}" else "Location not mapped",
+                    )
+                }
             }
             if (project.status.active || reported != null) {
                 Spacer(Modifier.height(8.dp))

@@ -742,7 +742,7 @@ fun FilterChip(
                 role = role,
                 enabled = enabled,
                 toggled = if (role == Role.Checkbox) selected else null,
-                selected = if (role != Role.Checkbox) selected else null,
+                selected = if (role == Role.RadioButton || role == Role.Tab) selected else null,
                 tint = Color.Transparent,
             )
             .padding(vertical = 4.dp),

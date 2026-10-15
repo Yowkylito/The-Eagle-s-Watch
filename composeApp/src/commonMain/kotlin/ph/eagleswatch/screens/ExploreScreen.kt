@@ -206,7 +206,6 @@ fun ExploreScreen(
                     today = today,
                     citizen = citizen,
                     onOpen = onOpen,
-                    onAbout = onAbout,
                 )
             }
         }
@@ -239,20 +238,20 @@ private fun ExploreHeader(
     ) {
         if (!layout.wide) {
             Row(
-                Modifier.fillMaxWidth().height(48.dp).padding(start = layout.gutter, end = layout.gutter - 8.dp),
+                Modifier.fillMaxWidth().height(44.dp).padding(start = layout.gutter, end = layout.gutter - 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Image(
                     painter = painterResource(Res.drawable.eagle_logo),
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp).clip(RoundedCornerShape(6.dp)),
+                    modifier = Modifier.size(22.dp).clip(RoundedCornerShape(5.dp)),
                 )
                 Spacer(Modifier.width(8.dp))
                 EText(
                     "The Eagle's Watch",
                     modifier = Modifier.weight(1f),
                     display = true,
-                    size = 20.sp,
+                    size = 19.sp,
                     color = EagleColors.Blue,
                     heading = true,
                 )
@@ -360,7 +359,6 @@ private fun Results(
     today: Day,
     citizen: CitizenState,
     onOpen: (Project) -> Unit,
-    onAbout: () -> Unit,
 ) {
     val layout = LocalLayout.current
     LazyVerticalGrid(
@@ -375,8 +373,6 @@ private fun Results(
                     modifier = Modifier.padding(horizontal = layout.gutter).padding(top = 8.dp),
                     tone = NoticeTone.Sample,
                     title = "Sample dataset",
-                    actionLabel = "About this data",
-                    onAction = onAbout,
                 )
             }
         }
@@ -435,7 +431,7 @@ private fun Summary(
     val missing = shown.size - amounts.size
     Column(Modifier.fillMaxWidth().hairlineBelow()) {
         Row(
-            Modifier.fillMaxWidth().padding(start = layout.gutter, end = layout.gutter - 8.dp, top = 10.dp, bottom = 8.dp),
+            Modifier.fillMaxWidth().padding(start = layout.gutter, end = layout.gutter - 8.dp, top = 6.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
