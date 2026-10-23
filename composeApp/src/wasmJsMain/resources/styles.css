@@ -4,10 +4,16 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+}
+
+/* The page colour belongs to html alone. A background on body as well paints above #boot, which sits at
+   z-index -1, and hides it. */
+html {
     background: #0C2B2B;
 }
 
-/* Shown behind the Compose canvas while the Wasm bundle loads; the opaque canvas covers it afterwards. */
+/* Shown while the Wasm bundle loads. ComposeViewport then attaches a shadow root to body, which holds the
+   canvas; #boot is not slotted into it, so it stops rendering (and animating) as the app takes over. */
 #boot {
     position: fixed;
     inset: 0;
